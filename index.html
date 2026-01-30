@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social Engineering Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+/* RESET & BASE */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+    font-family: 'Rajdhani', sans-serif; 
+    background: #1a1d35; 
+    color: #fff; 
+    line-height: 1.6;
+}
+
+/* CONTAINER */
+.container { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    padding: 20px; 
+}
+
+/* HEADER */
+header { 
+    text-align: center; 
+    margin-bottom: 30px; 
+    padding: 20px 0;
+}
+
+h1 { 
+    font-size: 2.5rem; 
+    letter-spacing: 3px; 
+    font-weight: 700;
+    margin: 0;
+}
+
+.subtitle { 
+    color: #8b95a5; 
+    font-size: 1.1rem; 
+    margin-top: 10px;
+    letter-spacing: 1px;
+}
+
+/* UPLOAD SECTION */
+.upload-section { 
+    background: #22253a; 
+    padding: 30px; 
+    border-radius: 12px; 
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.upload-section h2 {
+    margin-bottom: 20px;
+    color: #fff;
+    letter-spacing: 2px;
+    font-size: 1.3rem;
+}
+
+.upload-area { 
+    border: 3px dashed #2962FF; 
+    padding: 40px 20px; 
+    text-align: center; 
+    cursor: pointer; 
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: rgba(41, 98, 255, 0.05);
+}
+
+.upload-area:hover {
+    border-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.upload-area.dragover {
+    border-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.15);
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-info {
+    margin-top: 15px;
+    font-size: 0.95rem;
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.error-msg {
+    margin-top: 15px;
+    font-size: 0.95rem;
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+/* TABLE CONTAINER */
+.table-container {
+    background: #22253a;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    display: none;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+}
+
+.table-container.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* SEARCH & FILTERS */
+.search-box {
+    padding: 12px 15px;
+    background: #2c2f4d;
+    border: 2px solid #3a3d5c;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    font-family: 'Rajdhani', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.search-box:focus {
+    outline: none;
+    border-color: #2962FF;
+    background: #1a1d35;
+}
+
+.search-box::placeholder {
+    color: #8b95a5;
+}
+
+/* DATE INPUTS */
+.date-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.date-input-wrapper input[type="date"] {
+    width: 100%;
+    cursor: pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 1;
+    filter: invert(0.7);
+    font-size: 1.2em;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    filter: invert(0.9);
+}
+
+input[type="date"]::-moz-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 1;
+    filter: invert(0.7);
+}
+
+input[type="date"]:focus {
+    outline: 2px solid #2962FF;
+    outline-offset: 2px;
+}
+
+.search-box[type="date"] {
+    position: relative;
+    padding-right: 40px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23a8b2c1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 18px;
+}
+
+.search-box[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+}
+
+.date-tooltip {
+    position: absolute;
+    bottom: -25px;
+    left: 0;
+    font-size: 0.75rem;
+    color: #8b95a5;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.date-input-wrapper:hover .date-tooltip {
+    opacity: 1;
+}
+
+/* BUTTON */
+.upload-btn {
+    padding: 12px 24px;
+    background: #2962FF;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+}
+
+.upload-btn:hover {
+    background: #1e4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(41, 98, 255, 0.4);
+}
+
+.upload-btn:active {
+    transform: translateY(0);
+}
+
+.upload-btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #2c2f4d;
+}
+
+th {
+    background: #1a1d35;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: #a8b2c1;
+}
+
+tr:hover {
+    background: rgba(41, 98, 255, 0.05);
+}
+
+.screenshot-thumbnail {
+    width: 80px;
+    height: 50px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    border: 2px solid #2c2f4d;
+}
+
+.screenshot-thumbnail:hover {
+    transform: scale(1.1);
+    border-color: #2962FF;
+    box-shadow: 0 4px 12px rgba(41, 98, 255, 0.5);
+}
+
+.screenshot-cell {
+    text-align: center;
+}
+
+/* PAGINATION */
+.pagination {
+    text-align: center;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.pagination button {
+    padding: 10px 20px;
+    background: #2c2f4d;
+    border: 2px solid #3a3d5c;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: #2962FF;
+    border-color: #2962FF;
+}
+
+.pagination button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+#pageInfo {
+    font-weight: 600;
+    color: #a8b2c1;
+}
+
+/* MODAL */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.close {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close:hover {
+    color: #2962FF;
+    transform: scale(1.2);
+}
+
+/* CHARTS */
+.charts-grid-two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 2rem 0;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+}
+
+.charts-grid-two-cols.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.charts-grid-single {
+    margin: 2rem 0;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+}
+
+.charts-grid-single.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.chart-card {
+    background: #22253a;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.chart-card h3 {
+    margin-bottom: 20px;
+    color: #fff;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .charts-grid-two-cols {
+        grid-template-columns: 1fr;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+    <h1>SOCIAL ENGINEERING DASHBOARD</h1>
+    <div class="subtitle">Phishing Sites & Human Attack Surface</div>
+</header>
+
+<div class="upload-section">
+    <h2>UPLOAD CSV DATA</h2>
+    
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📊</div>
+        <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
+        <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
+        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
+    </div>
+    
+    <div id="fileInfo" class="file-info"></div>
+    <div id="errorMsg" class="error-msg"></div>
+</div>
+
+<div class="table-container" id="tableContainer">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
+        <div class="date-input-wrapper">
+            <input type="date" id="dateStartFilter" class="search-box" placeholder="Start Date" title="Clicca per selezionare la data di inizio">
+            <span class="date-tooltip">📅 Data inizio</span>
+        </div>
+        <div class="date-input-wrapper">
+            <input type="date" id="dateEndFilter" class="search-box" placeholder="End Date" title="Clicca per selezionare la data di fine">
+            <span class="date-tooltip">📅 Data fine</span>
+        </div>
+        <select id="sectorFilter" class="search-box" style="cursor:pointer;">
+            <option value="">All Sectors</option>
+        </select>
+        <select id="goalFilter" class="search-box" style="cursor:pointer;">
+            <option value="">All Goals</option>
+        </select>
+        <button id="resetFiltersBtn" class="upload-btn" style="background:#e74c3c;padding:0.9rem 1rem;font-size:0.9rem;" title="Resetta tutti i filtri">
+            🔄 Reset
+        </button>
+    </div>
+    
+    <div style="text-align:center;margin-bottom:1.5rem;">
+        <button id="generatePdfBtn" class="upload-btn" style="background:#27ae60;">
+            📄 Generate PDF Report
+        </button>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th>Date</th>
+                <th>Sector Attacked</th>
+                <th>Attack Goal</th>
+                <th>Screenshot</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr>
+                <td colspan="5" style="text-align:center;color:#8b95a5;">No data loaded</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="pagination">
+        <button id="prevBtn">← Previous</button>
+        <span id="pageInfo">Page 1</span>
+        <button id="nextBtn">Next →</button>
+    </div>
+</div>
+
+<!-- PRIMA RIGA: Torta Settori (sx) + Top 5 Settori Barre (dx) -->
+<div class="charts-grid-two-cols" id="chartsGridSectors" style="display:none;">
+    <div class="chart-card">
+        <h3>Distribuzione per Settore (Tutti)</h3>
+        <div class="chart-wrapper"><canvas id="allSectorsChart"></canvas></div>
+    </div>
+    
+    <div class="chart-card">
+        <h3>Top 5 Settori Attaccati</h3>
+        <div class="chart-wrapper"><canvas id="top5SectorsBarChart"></canvas></div>
+    </div>
+</div>
+
+<!-- SECONDA RIGA: Torta Obiettivi -->
+<div class="charts-grid-single" id="chartsGridGoalsPie" style="display:none;">
+    <div class="chart-card">
+        <h3>Distribuzione Obiettivi di Attacco (Tutti)</h3>
+        <div class="chart-wrapper"><canvas id="goalsPieChart"></canvas></div>
+    </div>
+</div>
+
+<!-- TERZA RIGA: Attacchi per Mese e Attacchi per Obiettivo (2 colonne) -->
+<div class="charts-grid-two-cols" id="chartsGridMonthAndGoals" style="display:none;">
+    <div class="chart-card">
+        <h3>Attacchi per Mese</h3>
+        <div class="chart-wrapper"><canvas id="monthChart"></canvas></div>
+    </div>
+    
+    <div class="chart-card">
+        <h3>Attacchi per Obiettivo nel Tempo</h3>
+        <div class="chart-wrapper"><canvas id="goalsByMonthChart"></canvas></div>
+    </div>
+</div>
+
+<div id="imageModal" class="modal" onclick="closeModal()">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="modalImage">
+</div>
+
+<!-- Canvas nascosti per PDF -->
+<canvas id="pdfBarChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="500"></canvas>
+<canvas id="pdfLineChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="450"></canvas>
+<canvas id="pdfMultiLineChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="500"></canvas>
+
+</div>
+
+<script>
+let allSectorsChart, top5SectorsBarChart, goalsPieChart, monthChart, goalsByMonthChart;
+let currentData = [];
+let filteredData = [];
+let currentPage = 1;
+const rowsPerPage = 10;
+const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
+
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const errorMsg = document.getElementById('errorMsg');
+
+// Inizializza i date pickers con feedback visivo
+const dateStartFilter = document.getElementById('dateStartFilter');
+const dateEndFilter = document.getElementById('dateEndFilter');
+
+// Aggiungi effetto visivo quando si apre il calendario
+dateStartFilter.addEventListener('click', function() {
+    this.showPicker && this.showPicker();
+});
+
+dateEndFilter.addEventListener('click', function() {
+    this.showPicker && this.showPicker();
+});
+
+// Feedback visivo quando viene selezionata una data
+dateStartFilter.addEventListener('change', function() {
+    if(this.value) {
+        this.style.borderColor = '#2962FF';
+        setTimeout(() => {
+            this.style.borderColor = '';
+        }, 1000);
+    }
+});
+
+dateEndFilter.addEventListener('change', function() {
+    if(this.value) {
+        this.style.borderColor = '#2962FF';
+        setTimeout(() => {
+            this.style.borderColor = '';
+        }, 1000);
+    }
+});
+
+uploadArea.onclick = () => fileInput.click();
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if(file) handleFile(file);
+});
+
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file) handleFile(file);
+});
+
+// Funzione per ottenere il percorso dell'immagine locale
+// Le immagini sono nella cartella "images" e il nome viene letto dalla colonna Screenshot del CSV
+function getLocalImagePath(screenshotName) {
+    if (screenshotName && screenshotName.trim() !== '') {
+        return `images/${screenshotName.trim()}`;
+    }
+    return ''; // Ritorna stringa vuota se non c'è screenshot
+}
+
+function showImage(imagePath) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    modal.style.display = 'flex';
+    modalImg.src = imagePath;
+}
+
+function closeModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+});
+
+function handleFile(file){
+    errorMsg.textContent = '';
+    fileInfo.textContent = '';
+    fileInfo.textContent = `📁 Loading ${file.name}...`;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const text = e.target.result;
+            console.log('File loaded, size:', text.length);
+            
+            const firstLine = text.split('\n')[0];
+            const tabCount = (firstLine.match(/\t/g) || []).length;
+            const commaCount = (firstLine.match(/,/g) || []).length;
+            const delimiter = tabCount > commaCount ? '\t' : ',';
+            console.log('Delimiter:', delimiter === '\t' ? 'TAB' : 'COMMA');
+            
+            const lines = text.split('\n').filter(l => l.trim());
+            if(lines.length < 2) {
+                errorMsg.textContent = '⚠️ File is empty or has no data rows';
+                return;
+            }
+            
+            function parseCSVLine(line, delim) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for(let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    const nextChar = line[i + 1];
+                    
+                    if(char === '"') {
+                        if(inQuotes && nextChar === '"') {
+                            current += '"';
+                            i++;
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if(char === delim && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else if(char !== '\r') {
+                        current += char;
+                    }
+                }
+                result.push(current.trim());
+                return result;
+            }
+            
+            const headers = parseCSVLine(lines[0], delimiter);
+            console.log('Headers found:', headers);
+            
+            let siteIdx = -1, dateIdx = -1, sectorIdx = -1, goalIdx = -1, screenshotIdx = -1;
+            headers.forEach((h, i) => {
+                const lower = h.toLowerCase().trim();
+                if(lower.includes('site') || lower.includes('sito') || lower.includes('url')) siteIdx = i;
+                if(lower.includes('last') || lower.includes('date') || lower.includes('data') || lower.includes('seen')) dateIdx = i;
+                if(lower.includes('sector') && lower.includes('attack')) sectorIdx = i;
+                if(lower.includes('goal') || lower.includes('obiettivo')) goalIdx = i;
+                if(lower.includes('screenshot') || lower.includes('image') || lower.includes('foto')) screenshotIdx = i;
+            });
+            
+            console.log('Indices - Site:', siteIdx, 'Date:', dateIdx, 'Sector:', sectorIdx, 'Goal:', goalIdx, 'Screenshot:', screenshotIdx);
+            console.log('Headers:', headers);
+            
+            if(siteIdx === -1 || sectorIdx === -1 || goalIdx === -1) {
+                errorMsg.innerHTML = `⚠️ Required columns not found!<br><br>
+                    <strong>Columns found:</strong><br>
+                    ${headers.map((h, i) => `${i}: "${h}"`).join('<br>')}`;
+                return;
+            }
+            
+            const data = [];
+            for(let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i], delimiter);
+                
+                let sector = values[sectorIdx] || 'UNKNOWN';
+                let goal = values[goalIdx] || 'UNKNOWN';
+                
+                if(sector.startsWith('http') || sector.includes('://') || sector.includes('drive.google')) {
+                    sector = 'UNKNOWN';
+                }
+                if(goal.startsWith('http') || goal.includes('://') || goal.includes('drive.google')) {
+                    goal = 'UNKNOWN';
+                }
+                
+                if(values[siteIdx] && values[siteIdx].length > 0) {
+                    const rowData = {
+                        site: values[siteIdx] || '',
+                        date: dateIdx !== -1 ? values[dateIdx] : '',
+                        sector: sector.trim().toUpperCase(),
+                        goal: goal.trim().toUpperCase(),
+                        screenshot: screenshotIdx !== -1 ? values[screenshotIdx] : '',
+                        rowIndex: i
+                    };
+                    
+                    // Debug: stampa i primi 5 record per verificare
+                    if(i <= 5) {
+                        console.log(`Row ${i}:`, {
+                            site: rowData.site.substring(0, 50),
+                            sector: rowData.sector,
+                            goal: rowData.goal,
+                            screenshot: rowData.screenshot
+                        });
+                    }
+                    
+                    data.push(rowData);
+                }
+            }
+            
+            console.log('Parsed', data.length, 'records');
+            
+            currentData = data;
+            filteredData = data;
+            
+            fileInfo.textContent = `✓ Successfully loaded ${data.length} records`;
+            
+            document.getElementById('tableContainer').classList.add('active');
+            
+            populateFilters(data);
+            displayPage(filteredData, 1);
+            updateAllCharts(filteredData);
+            
+            setTimeout(() => {
+                document.getElementById('tableContainer').scrollIntoView({behavior:'smooth'});
+            }, 300);
+            
+        } catch(error) {
+            errorMsg.textContent = '⚠️ Error: ' + error.message;
+            console.error('Parse error:', error);
+        }
+    };
+    
+    reader.onerror = () => {
+        errorMsg.textContent = '⚠️ Error reading file';
+    };
+    
+    reader.readAsText(file);
+}
+
+document.getElementById('dateStartFilter').addEventListener('change', applyFilters);
+document.getElementById('dateEndFilter').addEventListener('change', applyFilters);
+document.getElementById('sectorFilter').addEventListener('change', applyFilters);
+document.getElementById('goalFilter').addEventListener('change', applyFilters);
+
+document.getElementById('resetFiltersBtn').addEventListener('click', function() {
+    document.getElementById('dateStartFilter').value = '';
+    document.getElementById('dateEndFilter').value = '';
+    document.getElementById('sectorFilter').value = '';
+    document.getElementById('goalFilter').value = '';
+    applyFilters();
+});
+
+function applyFilters() {
+    const dateStart = document.getElementById('dateStartFilter').value;
+    const dateEnd = document.getElementById('dateEndFilter').value;
+    const sectorFilter = document.getElementById('sectorFilter').value;
+    const goalFilter = document.getElementById('goalFilter').value;
+    
+    filteredData = currentData.filter(r => {
+        if(dateStart && r.date < dateStart) return false;
+        if(dateEnd && r.date > dateEnd) return false;
+        if(sectorFilter && r.sector !== sectorFilter) return false;
+        if(goalFilter && r.goal !== goalFilter) return false;
+        return true;
+    });
+    
+    displayPage(filteredData, 1);
+    updateAllCharts(filteredData);
+}
+
+function populateFilters(data) {
+    const sectors = [...new Set(data.map(r => r.sector))].sort();
+    const sectorSelect = document.getElementById('sectorFilter');
+    sectorSelect.innerHTML = '<option value="">All Sectors</option>';
+    sectors.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s;
+        option.textContent = s;
+        sectorSelect.appendChild(option);
+    });
+    
+    const goals = [...new Set(data.map(r => r.goal))].sort();
+    const goalSelect = document.getElementById('goalFilter');
+    goalSelect.innerHTML = '<option value="">All Goals</option>';
+    goals.forEach(g => {
+        const option = document.createElement('option');
+        option.value = g;
+        option.textContent = g;
+        goalSelect.appendChild(option);
+    });
+}
+
+document.getElementById('prevBtn').onclick = () => {
+    if(currentPage > 1) {
+        currentPage--;
+        displayPage(filteredData, currentPage);
+    }
+};
+
+document.getElementById('nextBtn').onclick = () => {
+    const total = Math.ceil(filteredData.length / rowsPerPage);
+    if(currentPage < total) {
+        currentPage++;
+        displayPage(filteredData, currentPage);
+    }
+};
+
+function displayPage(data, page){
+    currentPage = page;
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    const start = (page - 1) * rowsPerPage;
+    const pageData = data.slice(start, start + rowsPerPage);
+
+    if(pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data found</td></tr>';
+        return;
+    }
+
+    pageData.forEach(r => {
+        const siteDisplay = r.site.length > 50 ? r.site.substring(0, 47) + '...' : r.site;
+        const dateDisplay = r.date ? r.date.substring(0, 10) : '-';
+        
+        // Usa il nome dell'immagine dalla colonna Screenshot
+        const imagePath = getLocalImagePath(r.screenshot);
+        const screenshotCell = imagePath ? `<img src="${imagePath}" alt="Screenshot" class="screenshot-thumbnail" onclick="event.stopPropagation(); showImage('${imagePath}')" onerror="this.style.display='none'">` : '-';
+        
+        tbody.innerHTML += `
+        <tr>
+            <td title="${r.site}">${siteDisplay}</td>
+            <td>${dateDisplay}</td>
+            <td>${r.sector}</td>
+            <td>${r.goal}</td>
+            <td class="screenshot-cell">${screenshotCell}</td>
+        </tr>`;
+    });
+
+    const total = Math.ceil(data.length / rowsPerPage) || 1;
+    document.getElementById('pageInfo').textContent = `Page ${page} of ${total} (${data.length} records)`;
+    document.getElementById('prevBtn').disabled = page === 1;
+    document.getElementById('nextBtn').disabled = page === total;
+}
+
+function updateAllCharts(data) {
+    const sectorFilter = document.getElementById('sectorFilter').value;
+    const goalFilter = document.getElementById('goalFilter').value;
+    const dateStart = document.getElementById('dateStartFilter').value;
+    const dateEnd = document.getElementById('dateEndFilter').value;
+    
+    let isLessThanMonth = false;
+    if(dateStart && dateEnd) {
+        const start = new Date(dateStart);
+        const end = new Date(dateEnd);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        isLessThanMonth = diffDays < 30;
+    }
+    
+    const showSectorCharts = !sectorFilter;
+    const chartsGridSectors = document.getElementById('chartsGridSectors');
+    if(showSectorCharts) {
+        chartsGridSectors.style.display = 'grid';
+        chartsGridSectors.classList.add('active');
+        updateAllSectorsChart(data);
+        updateTop5SectorsBarChart(data);
+    } else {
+        chartsGridSectors.style.display = 'none';
+        chartsGridSectors.classList.remove('active');
+        if(allSectorsChart) allSectorsChart.destroy();
+        if(top5SectorsBarChart) top5SectorsBarChart.destroy();
+    }
+    
+    const showGoalChart = !goalFilter;
+    const chartsGridGoalsPie = document.getElementById('chartsGridGoalsPie');
+    if(showGoalChart) {
+        chartsGridGoalsPie.style.display = 'block';
+        chartsGridGoalsPie.classList.add('active');
+        updateGoalsPieChart(data);
+    } else {
+        chartsGridGoalsPie.style.display = 'none';
+        chartsGridGoalsPie.classList.remove('active');
+        if(goalsPieChart) goalsPieChart.destroy();
+    }
+    
+    const showMonthChart = !isLessThanMonth;
+    const showGoalsByMonth = !goalFilter;
+    
+    const chartsGridMonthAndGoals = document.getElementById('chartsGridMonthAndGoals');
+    
+    if(showMonthChart || showGoalsByMonth) {
+        chartsGridMonthAndGoals.style.display = 'grid';
+        chartsGridMonthAndGoals.classList.add('active');
+        
+        if(showMonthChart) {
+            updateMonthChart(data);
+        } else {
+            if(monthChart) monthChart.destroy();
+        }
+        
+        if(showGoalsByMonth) {
+            updateGoalsByMonthChart(data);
+        } else {
+            if(goalsByMonthChart) goalsByMonthChart.destroy();
+        }
+    } else {
+        chartsGridMonthAndGoals.style.display = 'none';
+        chartsGridMonthAndGoals.classList.remove('active');
+        if(monthChart) monthChart.destroy();
+        if(goalsByMonthChart) goalsByMonthChart.destroy();
+    }
+}
+
+function updateAllSectorsChart(data){
+    if(allSectorsChart) allSectorsChart.destroy();
+    const sectors = {};
+    data.forEach(r => {
+        if(r.sector) sectors[r.sector] = (sectors[r.sector] || 0) + 1;
+    });
+    const sorted = Object.entries(sectors).sort((a,b) => b[1] - a[1]);
+    
+    const dynamicColors = sorted.map((_, idx) => colors[idx % colors.length]);
+    
+    allSectorsChart = new Chart(document.getElementById('allSectorsChart'), {
+        type: 'doughnut',
+        data: {
+            labels: sorted.map(([k]) => k),
+            datasets: [{
+                data: sorted.map(([_,v]) => v),
+                backgroundColor: dynamicColors,
+                borderWidth: 3,
+                borderColor: '#1a1d35'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#a8b2c1', 
+                        font: {size: 10}, 
+                        padding: 8,
+                        boxWidth: 12
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateTop5SectorsBarChart(data){
+    if(top5SectorsBarChart) top5SectorsBarChart.destroy();
+    const sectors = {};
+    data.forEach(r => {
+        if(r.sector) sectors[r.sector] = (sectors[r.sector] || 0) + 1;
+    });
+    const sorted = Object.entries(sectors).sort((a,b) => b[1] - a[1]).slice(0, 5);
+    
+    const brightColors = ['#2962FF', '#F44336', '#4CAF50', '#FF9800', '#9C27B0'];
+    
+    top5SectorsBarChart = new Chart(document.getElementById('top5SectorsBarChart'), {
+        type: 'bar',
+        data: {
+            labels: sorted.map(([k]) => k),
+            datasets: [{
+                label: 'Campagne',
+                data: sorted.map(([_,v]) => v),
+                backgroundColor: brightColors,
+                borderWidth: 0,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {display: false},
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: '#FFFFFF',
+                    bodyColor: '#FFFFFF'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true, 
+                    ticks: {color: '#a8b2c1', font: {size: 12}}, 
+                    grid: {color: 'rgba(168,178,193,0.1)'}
+                },
+                x: {
+                    grid: {display: false}, 
+                    ticks: {color: '#a8b2c1', font: {size: 11}}
+                }
+            }
+        }
+    });
+}
+
+function updateGoalsPieChart(data){
+    if(goalsPieChart) goalsPieChart.destroy();
+    const goals = {};
+    data.forEach(r => {
+        if(r.goal) goals[r.goal] = (goals[r.goal] || 0) + 1;
+    });
+    const sorted = Object.entries(goals).sort((a,b) => b[1] - a[1]);
+    
+    const dynamicColors = sorted.map((_, idx) => colors[idx % colors.length]);
+    
+    goalsPieChart = new Chart(document.getElementById('goalsPieChart'), {
+        type: 'doughnut',
+        data: {
+            labels: sorted.map(([k]) => k),
+            datasets: [{
+                data: sorted.map(([_,v]) => v),
+                backgroundColor: dynamicColors,
+                borderWidth: 3,
+                borderColor: '#1a1d35'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#a8b2c1', 
+                        font: {size: 10}, 
+                        padding: 8,
+                        boxWidth: 12
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateMonthChart(data){
+    if(monthChart) monthChart.destroy();
+    const months = {};
+    data.forEach(r => {
+        if(r.date && r.date.length >= 7) {
+            const m = r.date.slice(0, 7);
+            months[m] = (months[m] || 0) + 1;
+        }
+    });
+    const sorted = Object.keys(months).sort();
+    const counts = sorted.map(m => months[m]);
+    
+    const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+    const labels = sorted.map(m => {
+        const [year, month] = m.split('-');
+        return `${monthNames[parseInt(month) - 1]} ${year}`;
+    });
+    
+    monthChart = new Chart(document.getElementById('monthChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Campagne',
+                data: counts,
+                backgroundColor: 'rgba(41, 98, 255, 0.2)',
+                borderColor: '#2962FF',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 6,
+                pointBackgroundColor: '#2962FF',
+                pointBorderColor: '#FFFFFF',
+                pointBorderWidth: 3,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {display: false},
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: '#FFFFFF',
+                    bodyColor: '#FFFFFF',
+                    callbacks: {
+                        label: function(context) {
+                            return `Campagne: ${context.parsed.y}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true, 
+                    ticks: {color: '#a8b2c1', font: {size: 12}}, 
+                    grid: {color: 'rgba(168,178,193,0.1)'}
+                },
+                x: {
+                    ticks: {color: '#a8b2c1', font: {size: 11}}, 
+                    grid: {display: false}
+                }
+            }
+        }
+    });
+}
+
+function updateGoalsByMonthChart(data){
+    if(goalsByMonthChart) goalsByMonthChart.destroy();
+    const monthGoalMap = {};
+    const allGoals = new Set();
+    data.forEach(r => {
+        if(r.date && r.date.length >= 7 && r.goal) {
+            const month = r.date.slice(0, 7);
+            allGoals.add(r.goal);
+            if(!monthGoalMap[month]) monthGoalMap[month] = {};
+            monthGoalMap[month][r.goal] = (monthGoalMap[month][r.goal] || 0) + 1;
+        }
+    });
+    const sortedMonths = Object.keys(monthGoalMap).sort();
+    const goalCounts = {};
+    data.forEach(r => {
+        if(r.goal) goalCounts[r.goal] = (goalCounts[r.goal] || 0) + 1;
+    });
+    const sortedGoals = Object.entries(goalCounts).sort((a,b) => b[1] - a[1]).map(([g]) => g);
+    
+    const lineColors = [
+        '#2962FF', '#F44336', '#4CAF50', '#FF9800', '#9C27B0',
+        '#00BCD4', '#E91E63', '#009688', '#FFC107', '#3F51B5',
+        '#FF5722', '#795548', '#607D8B', '#CDDC39', '#8BC34A'
+    ];
+    
+    const datasets = sortedGoals.map((goal, idx) => ({
+        label: goal,
+        data: sortedMonths.map(month => monthGoalMap[month][goal] || 0),
+        borderColor: lineColors[idx % lineColors.length],
+        backgroundColor: 'transparent',
+        borderWidth: 3,
+        fill: false,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: lineColors[idx % lineColors.length],
+        pointBorderColor: '#FFFFFF',
+        pointBorderWidth: 2
+    }));
+    
+    goalsByMonthChart = new Chart(document.getElementById('goalsByMonthChart'), {
+        type: 'line',
+        data: {
+            labels: sortedMonths,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {color: '#a8b2c1', font: {size: 10}, padding: 8, boxWidth: 15}
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    titleColor: '#FFFFFF',
+                    bodyColor: '#FFFFFF'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true, 
+                    ticks: {color: '#a8b2c1', font: {size: 12}}, 
+                    grid: {color: 'rgba(168,178,193,0.1)'}
+                },
+                x: {
+                    ticks: {color: '#a8b2c1', font: {size: 10}}, 
+                    grid: {display: false}
+                }
+            }
+        }
+    });
+}
+
+// PDF GENERATION
+document.getElementById('generatePdfBtn').addEventListener('click', async function() {
+    alert('⚠️ PDF generation feature coming soon!');
+});
+
+
+</script>
+</body>
+</html>
