@@ -6,269 +6,170 @@
 <title>Social Engineering Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
-/* RESET & BASE */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Rajdhani', sans-serif; background: #1a1d35; color: #fff; line-height: 1.6; }
-/* CONTAINER */
-.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-/* HEADER */
-header { text-align: center; margin-bottom: 30px; padding: 20px 0; }
-h1 { font-size: 2.5rem; letter-spacing: 3px; font-weight: 700; margin: 0; }
-.subtitle { color: #8b95a5; font-size: 1.1rem; margin-top: 10px; letter-spacing: 1px; }
-/* UPLOAD SECTION */
-.upload-section { background: #22253a; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+/* BASE E STILI UGUALI ALL'ESISTENTE */
+body { font-family: 'Rajdhani', sans-serif; background: #1a1d35; color: #fff; line-height: 1.6; margin:0; padding:0; }
+.container { max-width:1200px; margin:0 auto; padding:20px; }
+header { text-align:center; margin-bottom:30px; padding:20px 0; }
+h1 { font-size:2.5rem; letter-spacing:3px; font-weight:700; margin:0; }
+.subtitle { color:#8b95a5; font-size:1.1rem; margin-top:10px; letter-spacing:1px; }
+.upload-section { background: #22253a; padding:30px; border-radius:12px; margin-bottom:30px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
 .upload-section h2 { margin-bottom: 20px; color: #fff; letter-spacing: 2px; font-size: 1.3rem; }
-.upload-area { border: 3px dashed #2962FF; padding: 40px 20px; text-align: center; cursor: pointer; border-radius: 12px; transition: all 0.3s ease; background: rgba(41, 98, 255, 0.05); }
-.upload-area:hover { border-color: #4CAF50; background: rgba(76, 175, 80, 0.1); }
-.upload-area.dragover { border-color: #4CAF50; background: rgba(76, 175, 80, 0.15); transform: scale(1.02); }
-.upload-icon { font-size: 3rem; margin-bottom: 10px; }
-.file-input { display: none; }
-.file-info { margin-top: 15px; font-size: 0.95rem; color: #27ae60; font-weight: 500; }
-.error-msg { margin-top: 15px; font-size: 0.95rem; color: #e74c3c; font-weight: 500; }
-/* TABLE CONTAINER */
-.table-container { background: #22253a; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: none; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
-.table-container.active { display: block; opacity: 1; transform: translateY(0); }
-/* SEARCH & FILTERS */
-.search-box { padding: 12px 15px; background: #2c2f4d; border: 2px solid #3a3d5c; border-radius: 8px; color: #fff; font-size: 0.95rem; font-family: 'Rajdhani', sans-serif; transition: all 0.3s ease; }
-.search-box:focus { outline: none; border-color: #2962FF; background: #1a1d35; }
-.search-box::placeholder { color: #8b95a5; }
-/* DATE INPUTS */
-.date-input-wrapper { position: relative; width: 100%; }
-.date-input-wrapper input[type="date"] { width: 100%; cursor: pointer; }
-.date-tooltip { position: absolute; bottom: -25px; left: 0; font-size: 0.75rem; color: #8b95a5; pointer-events: none; opacity: 0; transition: opacity 0.3s ease; }
-.date-input-wrapper:hover .date-tooltip { opacity: 1; }
-/* BUTTON */
-.upload-btn { padding: 12px 24px; background: #2962FF; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-family: 'Rajdhani', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.5px; }
-.upload-btn:hover { background: #1e4ed8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(41, 98, 255, 0.4); }
-.upload-btn:active { transform: translateY(0); }
-.upload-btn:disabled { background: #555; cursor: not-allowed; transform: none; }
-/* TABLE */
-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-th, td { padding: 12px 15px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid #2c2f4d; }
-th { background: #1a1d35; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem; color: #a8b2c1; }
-tr:hover { background: rgba(41, 98, 255, 0.05); }
-.screenshot-thumbnail { width: 80px; height: 50px; object-fit: cover; cursor: pointer; border-radius: 6px; transition: all 0.3s ease; border: 2px solid #2c2f4d; }
-.screenshot-thumbnail:hover { transform: scale(1.1); border-color: #2962FF; box-shadow: 0 4px 12px rgba(41, 98, 255, 0.5); }
-.screenshot-cell { text-align: center; }
-/* PAGINATION */
-.pagination { text-align: center; margin: 20px 0; display: flex; justify-content: center; align-items: center; gap: 15px; }
-.pagination button { padding: 10px 20px; background: #2c2f4d; border: 2px solid #3a3d5c; color: #fff; border-radius: 8px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-weight: 600; transition: all 0.3s ease; }
-.pagination button:hover:not(:disabled) { background: #2962FF; border-color: #2962FF; }
-.pagination button:disabled { opacity: 0.3; cursor: not-allowed; }
-#pageInfo { font-weight: 600; color: #a8b2c1; }
-/* MODAL */
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; }
-.modal-content { max-width: 90%; max-height: 90%; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-.close { position: absolute; top: 30px; right: 40px; color: #fff; font-size: 40px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; }
-.close:hover { color: #2962FF; transform: scale(1.2); }
-/* RESPONSIVE */
-@media (max-width: 768px) { .container { padding: 15px; } h1 { font-size: 1.8rem; } }
+.upload-area { border:3px dashed #2962FF; padding:40px 20px; text-align:center; cursor:pointer; border-radius:12px; transition: all 0.3s ease; background: rgba(41, 98, 255, 0.05); }
+.upload-area:hover { border-color:#4CAF50; background: rgba(76,175,80,0.1);}
+.upload-icon{font-size:3rem;margin-bottom:10px;}
+.file-input{display:none;}
+.file-info{margin-top:15px;font-size:0.95rem;color:#27ae60;font-weight:500;}
+.error-msg{margin-top:15px;font-size:0.95rem;color:#e74c3c;font-weight:500;}
+.table-container { background:#22253a; padding:30px; border-radius:12px; margin-bottom:30px; box-shadow:0 4px 6px rgba(0,0,0,0.3); display:none; opacity:0; transform: translateY(20px); transition: all 0.5s ease;}
+.table-container.active{display:block; opacity:1; transform:translateY(0);}
+.search-box{padding:12px 15px; background:#2c2f4d; border:2px solid #3a3d5c; border-radius:8px; color:#fff; font-size:0.95rem; font-family:'Rajdhani',sans-serif; transition:all 0.3s ease;}
+.search-box:focus{outline:none; border-color:#2962FF; background:#1a1d35;}
+table{width:100%; border-collapse:collapse; margin-bottom:20px;}
+th,td{padding:12px 15px; text-align:left; font-size:0.9rem; border-bottom:1px solid #2c2f4d;}
+th{background:#1a1d35; font-weight:600; letter-spacing:1px; text-transform:uppercase; font-size:0.85rem; color:#a8b2c1;}
+tr:hover{background:rgba(41,98,255,0.05);}
+.screenshot-thumbnail{width:80px;height:50px;object-fit:cover; cursor:pointer; border-radius:6px; transition:all 0.3s ease; border:2px solid #2c2f4d;}
+.screenshot-thumbnail:hover{transform:scale(1.1); border-color:#2962FF; box-shadow:0 4px 12px rgba(41,98,255,0.5);}
+.screenshot-cell{text-align:center;}
+.pagination{text-align:center; margin:20px 0; display:flex; justify-content:center; align-items:center; gap:15px;}
+.pagination button{padding:10px 20px; background:#2c2f4d; border:2px solid #3a3d5c; color:#fff; border-radius:8px; cursor:pointer; font-family:'Rajdhani',sans-serif; font-weight:600; transition: all 0.3s ease;}
+.pagination button:hover:not(:disabled){background:#2962FF;border-color:#2962FF;}
+.pagination button:disabled{opacity:0.3;cursor:not-allowed;}
+#pageInfo{font-weight:600;color:#a8b2c1;}
+.modal{display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.95); justify-content:center; align-items:center;}
+.modal-content{max-width:90%; max-height:90%; border-radius:8px; box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.close{position:absolute; top:30px; right:40px; color:#fff; font-size:40px; font-weight:bold; cursor:pointer; transition:all 0.3s ease;}
+.close:hover{color:#2962FF; transform:scale(1.2);}
 </style>
 </head>
 <body>
 <div class="container">
-
 <header>
-    <h1>SOCIAL ENGINEERING DASHBOARD</h1>
-    <div class="subtitle">Phishing Sites & Human Attack Surface</div>
+<h1>SOCIAL ENGINEERING DASHBOARD</h1>
+<div class="subtitle">Phishing Sites & Human Attack Surface</div>
 </header>
 
 <div class="upload-section">
-    <h2>UPLOAD CSV DATA</h2>
-    <div class="upload-area" id="uploadArea">
-        <div class="upload-icon">📊</div>
-        <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
-        <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
-        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
-    </div>
-    <div id="fileInfo" class="file-info"></div>
-    <div id="errorMsg" class="error-msg"></div>
+<h2>UPLOAD EXCEL DATA</h2>
+<div class="upload-area" id="uploadArea">
+    <div class="upload-icon">📊</div>
+    <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload Excel file</p>
+    <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
+    <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls">
+</div>
+<div id="fileInfo" class="file-info"></div>
+<div id="errorMsg" class="error-msg"></div>
 </div>
 
 <div class="table-container" id="tableContainer">
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
-        <div class="date-input-wrapper">
-            <input type="date" id="dateStartFilter" class="search-box" placeholder="Start Date">
-            <span class="date-tooltip">📅 Data inizio</span>
-        </div>
-        <div class="date-input-wrapper">
-            <input type="date" id="dateEndFilter" class="search-box" placeholder="End Date">
-            <span class="date-tooltip">📅 Data fine</span>
-        </div>
-        <select id="sectorFilter" class="search-box" style="cursor:pointer;">
-            <option value="">All Sectors</option>
-        </select>
-        <select id="goalFilter" class="search-box" style="cursor:pointer;">
-            <option value="">All Goals</option>
-        </select>
-        <button id="resetFiltersBtn" class="upload-btn" style="background:#e74c3c;padding:0.9rem 1rem;font-size:0.9rem;">🔄 Reset</button>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Site</th>
-                <th>Date</th>
-                <th>Sector Attacked</th>
-                <th>Attack Goal</th>
-                <th>Screenshot</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
-            <tr>
-                <td colspan="5" style="text-align:center;color:#8b95a5;">No data loaded</td>
-            </tr>
-        </tbody>
-    </table>
-    <div class="pagination">
-        <button id="prevBtn">← Previous</button>
-        <span id="pageInfo">Page 1</span>
-        <button id="nextBtn">Next →</button>
-    </div>
+<table>
+<thead>
+<tr>
+<th>Site</th>
+<th>Date</th>
+<th>Sector Attacked</th>
+<th>Attack Goal</th>
+<th>Screenshot</th>
+</tr>
+</thead>
+<tbody id="tableBody">
+<tr>
+<td colspan="5" style="text-align:center;color:#8b95a5;">No data loaded</td>
+</tr>
+</tbody>
+</table>
+<div class="pagination">
+<button id="prevBtn">← Previous</button>
+<span id="pageInfo">Page 1</span>
+<button id="nextBtn">Next →</button>
+</div>
 </div>
 
 <!-- MODAL IMMAGINE -->
 <div id="imageModal" class="modal" onclick="closeModal()">
-    <span class="close">&times;</span>
-    <img class="modal-content" id="modalImage">
+<span class="close">&times;</span>
+<img class="modal-content" id="modalImage">
 </div>
 
 <script>
-// ==================== JS COMPLETO ====================
+// ==========================================
+// FUNZIONI JS
+// ==========================================
 
-// Funzione per prendere immagini da GitHub
-function getGitImagePath(rowIndex) {
+function getGitImagePath(rowIndex){
     return `https://raw.githubusercontent.com/nimeo1988/social-dasboard/main/images/${rowIndex}.png`;
 }
 
-// Mostra immagine in modal
-function showImage(imagePath) {
-    const modal = document.getElementById('imageModal');
-    const modalImg = document.getElementById('modalImage');
-    modal.style.display = 'flex';
-    modalImg.src = imagePath;
+function showImage(imagePath){
+    const modal=document.getElementById('imageModal');
+    const modalImg=document.getElementById('modalImage');
+    modal.style.display='flex';
+    modalImg.src=imagePath;
 }
-function closeModal() { document.getElementById('imageModal').style.display = 'none'; }
+function closeModal(){document.getElementById('imageModal').style.display='none';}
 
-// Variabili globali
-let csvData = [];
-let currentPage = 1;
-const rowsPerPage = 10;
+let excelData=[]; // dati caricati
+let currentPage=1;
+const rowsPerPage=10;
 
-// Carica CSV
-document.getElementById('fileInput').addEventListener('change', handleFileUpload);
-function handleFileUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        const text = event.target.result;
-        parseCSV(text);
-        populateFilters();
+document.getElementById('fileInput').addEventListener('change',handleFileUpload);
+
+function handleFileUpload(e){
+    const file=e.target.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=function(event){
+        const data=new Uint8Array(event.target.result);
+        const workbook=XLSX.read(data,{type:'array'});
+        const firstSheet=workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData=XLSX.utils.sheet_to_json(firstSheet,{defval:''});
+        excelData=jsonData.map((row,index)=>{
+            row.rowIndex=index+1;
+            return row;
+        });
+        currentPage=1;
         renderTable();
         document.getElementById('tableContainer').classList.add('active');
     };
-    reader.readAsText(file);
+    reader.readAsArrayBuffer(file);
 }
 
-// Parsifica CSV
-function parseCSV(text) {
-    const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
-    const headers = lines.shift().split(',');
-    csvData = lines.map((line,index) => {
-        const values = line.split(',');
-        const row = {};
-        headers.forEach((h,i)=>row[h.trim()]=values[i]?.trim()||'');
-        row.rowIndex = index+1;
-        return row;
-    });
-}
-
-// Filtri
-function populateFilters() {
-    const sectorSet = new Set();
-    const goalSet = new Set();
-    csvData.forEach(r => { if(r['Sector Attacked']) sectorSet.add(r['Sector Attacked']); if(r['Attack Goal']) goalSet.add(r['Attack Goal']); });
-
-    const sectorFilter = document.getElementById('sectorFilter');
-    sectorFilter.innerHTML = '<option value="">All Sectors</option>';
-    Array.from(sectorSet).sort().forEach(s => sectorFilter.innerHTML += `<option value="${s}">${s}</option>`);
-
-    const goalFilter = document.getElementById('goalFilter');
-    goalFilter.innerHTML = '<option value="">All Goals</option>';
-    Array.from(goalSet).sort().forEach(g => goalFilter.innerHTML += `<option value="${g}">${g}</option>`);
-}
-
-// Render tabella
-function renderTable() {
-    const tableBody = document.getElementById('tableBody');
-    tableBody.innerHTML = '';
-
-    const startDate = document.getElementById('dateStartFilter').value;
-    const endDate = document.getElementById('dateEndFilter').value;
-    const sector = document.getElementById('sectorFilter').value;
-    const goal = document.getElementById('goalFilter').value;
-
-    let filtered = csvData.filter(r => {
-        let pass = true;
-        if(startDate && r['Date'] < startDate) pass = false;
-        if(endDate && r['Date'] > endDate) pass = false;
-        if(sector && r['Sector Attacked'] !== sector) pass = false;
-        if(goal && r['Attack Goal'] !== goal) pass = false;
-        return pass;
-    });
-
-    const totalPages = Math.ceil(filtered.length/rowsPerPage);
-    if(currentPage > totalPages) currentPage = totalPages||1;
-
-    const start = (currentPage-1)*rowsPerPage;
-    const end = start+rowsPerPage;
-    const pageData = filtered.slice(start,end);
+function renderTable(){
+    const tableBody=document.getElementById('tableBody');
+    tableBody.innerHTML='';
+    const totalPages=Math.ceil(excelData.length/rowsPerPage);
+    if(currentPage>totalPages) currentPage=totalPages||1;
+    const start=(currentPage-1)*rowsPerPage;
+    const end=start+rowsPerPage;
+    const pageData=excelData.slice(start,end);
 
     if(pageData.length===0){
-        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data</td></tr>`;
+        tableBody.innerHTML=`<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data</td></tr>`;
     } else {
         pageData.forEach(r=>{
-            const imagePath = getGitImagePath(r.rowIndex);
-            const screenshotCell = `<td class="screenshot-cell"><img src="${imagePath}" alt="Screenshot" class="screenshot-thumbnail" onclick="showImage('${imagePath}')" onerror="this.src='https://via.placeholder.com/80x50?text=No+Img'"></td>`;
-            tableBody.innerHTML += `
-                <tr>
-                    <td>${r['Site']||''}</td>
-                    <td>${r['Date']||''}</td>
-                    <td>${r['Sector Attacked']||''}</td>
-                    <td>${r['Attack Goal']||''}</td>
-                    ${screenshotCell}
-                </tr>
-            `;
+            const imagePath=getGitImagePath(r.rowIndex);
+            const screenshotCell=`<td class="screenshot-cell"><img src="${imagePath}" class="screenshot-thumbnail" onclick="showImage('${imagePath}')" onerror="this.src='https://via.placeholder.com/80x50?text=No+Img'"></td>`;
+            tableBody.innerHTML+=`
+            <tr>
+            <td>${r['Site']||''}</td>
+            <td>${r['Date']||''}</td>
+            <td>${r['Sector Attacked']||''}</td>
+            <td>${r['Attack Goal']||''}</td>
+            ${screenshotCell}
+            </tr>`;
         });
     }
-
-    document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages||1}`;
+    document.getElementById('pageInfo').textContent=`Page ${currentPage} of ${totalPages||1}`;
 }
 
 // Pagination
-document.getElementById('prevBtn').addEventListener('click',()=>{ if(currentPage>1){ currentPage--; renderTable(); } });
-document.getElementById('nextBtn').addEventListener('click',()=>{ if(currentPage*rowsPerPage<csvData.length){ currentPage++; renderTable(); } });
-
-// Filtri eventi
-['dateStartFilter','dateEndFilter','sectorFilter','goalFilter'].forEach(id=>{
-    document.getElementById(id).addEventListener('change',()=>{ currentPage=1; renderTable(); });
-});
-
-// Reset filtri
-document.getElementById('resetFiltersBtn').addEventListener('click',()=>{
-    document.getElementById('dateStartFilter').value='';
-    document.getElementById('dateEndFilter').value='';
-    document.getElementById('sectorFilter').value='';
-    document.getElementById('goalFilter').value='';
-    currentPage=1;
-    renderTable();
-});
+document.getElementById('prevBtn').addEventListener('click',()=>{if(currentPage>1){currentPage--; renderTable();}});
+document.getElementById('nextBtn').addEventListener('click',()=>{if(currentPage*rowsPerPage<excelData.length){currentPage++; renderTable();}});
 </script>
-</div>
+
 </body>
 </html>
