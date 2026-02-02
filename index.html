@@ -609,29 +609,52 @@ uploadArea.addEventListener('drop', (e) => {
     if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
     const file = e.dataTransfer.files[0];
 
-    // Controllo estensione robusto (maiuscole/minuscole)
-    const allowed = ['csv', 'tsv', 'txt'];
+// CLICK per aprire il file picker
+uploadArea.onclick = () => fileInput.click();
+
+// Drag & Drop
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    uploadArea.classList.remove('dragover');
+
+    if(!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+    const file = e.dataTransfer.files[0];
+
     const ext = file.name.split('.').pop().toLowerCase();
-    if(!allowed.includes(ext)){
+    if(!['csv','tsv','txt'].includes(ext)){
         errorMsg.textContent = '⚠️ File non valido! Usa CSV, TSV o TXT.';
         return;
     }
 
+    console.log('File ricevuto via drop:', file.name);
     handleFile(file);
 });
 
 // File picker
 fileInput.addEventListener('change', (e) => {
-    if (!e.target.files || e.target.files.length === 0) return;
+    if(!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
 
-    const allowed = ['csv', 'tsv', 'txt'];
     const ext = file.name.split('.').pop().toLowerCase();
-    if(!allowed.includes(ext)){
+    if(!['csv','tsv','txt'].includes(ext)){
         errorMsg.textContent = '⚠️ File non valido! Usa CSV, TSV o TXT.';
         return;
     }
 
+    console.log('File ricevuto via picker:', file.name);
     handleFile(file);
 });
 
