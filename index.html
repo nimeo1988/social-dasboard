@@ -560,11 +560,9 @@ const fileInput = document.getElementById('fileInput');
 const fileInfo = document.getElementById('fileInfo');
 const errorMsg = document.getElementById('errorMsg');
 
-// Inizializza i date pickers con feedback visivo
 const dateStartFilter = document.getElementById('dateStartFilter');
 const dateEndFilter = document.getElementById('dateEndFilter');
 
-// Aggiungi effetto visivo quando si apre il calendario
 dateStartFilter.addEventListener('click', function() {
     this.showPicker && this.showPicker();
 });
@@ -573,7 +571,6 @@ dateEndFilter.addEventListener('click', function() {
     this.showPicker && this.showPicker();
 });
 
-// Feedback visivo quando viene selezionata una data
 dateStartFilter.addEventListener('change', function() {
     if(this.value) {
         this.style.borderColor = '#2962FF';
@@ -615,13 +612,11 @@ fileInput.addEventListener('change', (e) => {
     if(file) handleFile(file);
 });
 
-// Funzione per ottenere il percorso dell'immagine locale
-// Le immagini sono nella cartella "images" e il nome viene letto dalla colonna Screenshot del CSV
 function getLocalImagePath(screenshotName) {
     if (screenshotName && screenshotName.trim() !== '') {
         return `images/${screenshotName.trim()}`;
     }
-    return ''; // Ritorna stringa vuota se non c'è screenshot
+    return '';
 }
 
 function showImage(imagePath) {
@@ -738,7 +733,6 @@ function handleFile(file){
                         rowIndex: i
                     };
                     
-                    // Debug: stampa i primi 5 record per verificare
                     if(i <= 5) {
                         console.log(`Row ${i}:`, {
                             site: rowData.site.substring(0, 50),
@@ -866,7 +860,6 @@ function displayPage(data, page){
         const siteDisplay = r.site.length > 50 ? r.site.substring(0, 47) + '...' : r.site;
         const dateDisplay = r.date ? r.date.substring(0, 10) : '-';
         
-        // Usa il nome dell'immagine dalla colonna Screenshot
         const imagePath = getLocalImagePath(r.screenshot);
         const screenshotCell = imagePath ? `<img src="${imagePath}" alt="Screenshot" class="screenshot-thumbnail" onclick="event.stopPropagation(); showImage('${imagePath}')" onerror="this.style.display='none'">` : '-';
         
@@ -1103,22 +1096,33 @@ function updateGoalsPieChart(data){
     });
 }
 
+// FUNZIONE CORRETTA PER IL GRAFICO "ATTACCHI PER MESE"
 function updateMonthChart(data){
     if(monthChart) monthChart.destroy();
+    
     const months = {};
     data.forEach(r => {
         if(r.date && r.date.length >= 7) {
-            const m = r.date.slice(0, 7);
+            const m = r.date.slice(0, 7); // YYYY-MM format
             months[m] = (months[m] || 0) + 1;
         }
     });
+    
     const sorted = Object.keys(months).sort();
     const counts = sorted.map(m => months[m]);
     
+    // Nomi dei mesi in italiano
     const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+    
+    // Converti le etichette da YYYY-MM a "Mese Anno"
     const labels = sorted.map(m => {
-        const [year, month] = m.split('-');
-        return `${monthNames[parseInt(month) - 1]} ${year}`;
+        const parts = m.split('-');
+        if(parts.length === 2) {
+            const year = parts[0];
+            const monthIndex = parseInt(parts[1]) - 1;
+            return `${monthNames[monthIndex]} ${year}`;
+        }
+        return m;
     });
     
     monthChart = new Chart(document.getElementById('monthChart'), {
@@ -1158,12 +1162,21 @@ function updateMonthChart(data){
             },
             scales: {
                 y: {
-                    beginAtZero: true, 
-                    ticks: {color: '#a8b2c1', font: {size: 12}}, 
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#a8b2c1',
+                        font: {size: 12},
+                        stepSize: 5
+                    },
                     grid: {color: 'rgba(168,178,193,0.1)'}
                 },
                 x: {
-                    ticks: {color: '#a8b2c1', font: {size: 11}}, 
+                    ticks: {
+                        color: '#a8b2c1',
+                        font: {size: 11},
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
                     grid: {display: false}
                 }
             }
@@ -1171,19 +1184,25 @@ function updateMonthChart(data){
     });
 }
 
+// FUNZIONE CORRETTA PER IL GRAFICO "ATTACCHI PER OBIETTIVO NEL TEMPO"
 function updateGoalsByMonthChart(data){
     if(goalsByMonthChart) goalsByMonthChart.destroy();
+    
     const monthGoalMap = {};
     const allGoals = new Set();
+    
     data.forEach(r => {
         if(r.date && r.date.length >= 7 && r.goal) {
-            const month = r.date.slice(0, 7);
+            const month = r.date.slice(0, 7); // YYYY-MM format
             allGoals.add(r.goal);
             if(!monthGoalMap[month]) monthGoalMap[month] = {};
             monthGoalMap[month][r.goal] = (monthGoalMap[month][r.goal] || 0) + 1;
         }
     });
+    
     const sortedMonths = Object.keys(monthGoalMap).sort();
+    
+    // Conta totali per goal per ordinare
     const goalCounts = {};
     data.forEach(r => {
         if(r.goal) goalCounts[r.goal] = (goalCounts[r.goal] || 0) + 1;
@@ -1210,10 +1229,24 @@ function updateGoalsByMonthChart(data){
         pointBorderWidth: 2
     }));
     
+    // Nomi dei mesi in italiano
+    const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+    
+    // Converti le etichette da YYYY-MM a "Mese Anno"
+    const labels = sortedMonths.map(m => {
+        const parts = m.split('-');
+        if(parts.length === 2) {
+            const year = parts[0];
+            const monthIndex = parseInt(parts[1]) - 1;
+            return `${monthNames[monthIndex]} ${year}`;
+        }
+        return m;
+    });
+    
     goalsByMonthChart = new Chart(document.getElementById('goalsByMonthChart'), {
         type: 'line',
         data: {
-            labels: sortedMonths,
+            labels: labels,
             datasets: datasets
         },
         options: {
@@ -1222,7 +1255,12 @@ function updateGoalsByMonthChart(data){
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: {color: '#a8b2c1', font: {size: 10}, padding: 8, boxWidth: 15}
+                    labels: {
+                        color: '#a8b2c1',
+                        font: {size: 10},
+                        padding: 8,
+                        boxWidth: 15
+                    }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(0,0,0,0.8)',
@@ -1232,12 +1270,21 @@ function updateGoalsByMonthChart(data){
             },
             scales: {
                 y: {
-                    beginAtZero: true, 
-                    ticks: {color: '#a8b2c1', font: {size: 12}}, 
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#a8b2c1',
+                        font: {size: 12},
+                        stepSize: 5
+                    },
                     grid: {color: 'rgba(168,178,193,0.1)'}
                 },
                 x: {
-                    ticks: {color: '#a8b2c1', font: {size: 10}}, 
+                    ticks: {
+                        color: '#a8b2c1',
+                        font: {size: 10},
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
                     grid: {display: false}
                 }
             }
@@ -1249,7 +1296,6 @@ function updateGoalsByMonthChart(data){
 document.getElementById('generatePdfBtn').addEventListener('click', async function() {
     alert('⚠️ PDF generation feature coming soon!');
 });
-
 
 </script>
 </body>
