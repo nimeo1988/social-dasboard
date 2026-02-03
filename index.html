@@ -29,26 +29,16 @@ h1 { font-size: 2.5rem; letter-spacing: 3px; font-weight: 700; margin: 0; }
 .file-input { display: none; }
 .file-info { margin-top: 15px; font-size: 0.95rem; color: #27ae60; font-weight: 500; }
 .error-msg { margin-top: 15px; font-size: 0.95rem; color: #e74c3c; font-weight: 500; }
-/* TABLE CONTAINER */
+/* TABLE */
 .table-container { background: #22253a; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: none; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
 .table-container.active { display: block; opacity: 1; transform: translateY(0); }
-/* SEARCH & FILTERS */
 .search-box { padding: 12px 15px; background: #2c2f4d; border: 2px solid #3a3d5c; border-radius: 8px; color: #fff; font-size: 0.95rem; font-family: 'Rajdhani', sans-serif; transition: all 0.3s ease; }
 .search-box:focus { outline: none; border-color: #2962FF; background: #1a1d35; }
 .search-box::placeholder { color: #8b95a5; }
-/* DATE INPUTS */
-.date-input-wrapper { position: relative; width: 100%; }
-.date-input-wrapper input[type="date"] { width: 100%; cursor: pointer; }
-input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 1; filter: invert(0.7); font-size: 1.2em; }
-input[type="date"]:focus { outline: 2px solid #2962FF; outline-offset: 2px; }
-.date-tooltip { position: absolute; bottom: -25px; left: 0; font-size: 0.75rem; color: #8b95a5; pointer-events: none; opacity: 0; transition: opacity 0.3s ease; }
-.date-input-wrapper:hover .date-tooltip { opacity: 1; }
-/* BUTTON */
 .upload-btn { padding: 12px 24px; background: #2962FF; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-family: 'Rajdhani', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.3s ease; letter-spacing: 0.5px; }
 .upload-btn:hover { background: #1e4ed8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(41, 98, 255, 0.4); }
 .upload-btn:active { transform: translateY(0); }
 .upload-btn:disabled { background: #555; cursor: not-allowed; transform: none; }
-/* TABLE */
 table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
 th, td { padding: 12px 15px; text-align: left; font-size: 0.9rem; border-bottom: 1px solid #2c2f4d; }
 th { background: #1a1d35; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-size: 0.85rem; color: #a8b2c1; }
@@ -56,7 +46,6 @@ tr:hover { background: rgba(41, 98, 255, 0.05); }
 .screenshot-thumbnail { width: 80px; height: 50px; object-fit: cover; cursor: pointer; border-radius: 6px; transition: all 0.3s ease; border: 2px solid #2c2f4d; }
 .screenshot-thumbnail:hover { transform: scale(1.1); border-color: #2962FF; box-shadow: 0 4px 12px rgba(41, 98, 255, 0.5); }
 .screenshot-cell { text-align: center; }
-/* PAGINATION */
 .pagination { text-align: center; margin: 20px 0; display: flex; justify-content: center; align-items: center; gap: 15px; }
 .pagination button { padding: 10px 20px; background: #2c2f4d; border: 2px solid #3a3d5c; color: #fff; border-radius: 8px; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-weight: 600; transition: all 0.3s ease; }
 .pagination button:hover:not(:disabled) { background: #2962FF; border-color: #2962FF; }
@@ -72,10 +61,9 @@ tr:hover { background: rgba(41, 98, 255, 0.05); }
 .charts-grid-two-cols.active { opacity: 1; transform: translateY(0); }
 .charts-grid-single { margin: 2rem 0; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
 .charts-grid-single.active { opacity: 1; transform: translateY(0); }
-.chart-card { background: #22253a; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); }
+.chart-card { background: #22253a; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
 .chart-card h3 { margin-bottom: 20px; color: #fff; font-size: 1.1rem; letter-spacing: 1px; }
-.chart-wrapper { position: relative; height: 350px; } /* più alto per desktop */
-/* RESPONSIVE */
+.chart-wrapper { position: relative; height: 300px; }
 @media (max-width: 768px) { .charts-grid-two-cols { grid-template-columns: 1fr; } h1 { font-size: 1.8rem; } .container { padding: 15px; } }
 </style>
 </head>
@@ -88,10 +76,69 @@ tr:hover { background: rgba(41, 98, 255, 0.05); }
     <div class="subtitle">Phishing Sites & Human Attack Surface</div>
 </header>
 
-<!-- UPLOAD SECTION, TABLE, MODAL RESTANO UGUALI -->
-<!-- ... (il tuo codice esistente di upload e tabella rimane invariato) -->
+<div class="upload-section">
+    <h2>UPLOAD CSV DATA</h2>
+    
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📊</div>
+        <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
+        <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
+        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
+    </div>
+    
+    <div id="fileInfo" class="file-info"></div>
+    <div id="errorMsg" class="error-msg"></div>
+</div>
 
-<!-- GRAFICI MULTILINE -->
+<div class="table-container" id="tableContainer">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
+        <div class="date-input-wrapper">
+            <input type="date" id="dateStartFilter" class="search-box" placeholder="Start Date">
+        </div>
+        <div class="date-input-wrapper">
+            <input type="date" id="dateEndFilter" class="search-box" placeholder="End Date">
+        </div>
+        <select id="sectorFilter" class="search-box" style="cursor:pointer;">
+            <option value="">All Sectors</option>
+        </select>
+        <select id="goalFilter" class="search-box" style="cursor:pointer;">
+            <option value="">All Goals</option>
+        </select>
+        <button id="resetFiltersBtn" class="upload-btn" style="background:#e74c3c;padding:0.9rem 1rem;font-size:0.9rem;">
+            🔄 Reset
+        </button>
+    </div>
+    
+    <div style="text-align:center;margin-bottom:1.5rem;">
+        <button id="generatePdfBtn" class="upload-btn" style="background:#27ae60;">
+            📄 Generate PDF Report
+        </button>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Site</th>
+                <th>Date</th>
+                <th>Sector Attacked</th>
+                <th>Attack Goal</th>
+                <th>Screenshot</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <tr>
+                <td colspan="5" style="text-align:center;color:#8b95a5;">No data loaded</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="pagination">
+        <button id="prevBtn">← Previous</button>
+        <span id="pageInfo">Page 1</span>
+        <button id="nextBtn">Next →</button>
+    </div>
+</div>
+
+<!-- CHARTS -->
 <div class="charts-grid-two-cols" id="chartsGridMonthAndGoals" style="display:none;">
     <div class="chart-card">
         <h3>Attacchi per Mese</h3>
@@ -104,121 +151,214 @@ tr:hover { background: rgba(41, 98, 255, 0.05); }
     </div>
 </div>
 
-<script>
-let monthChart, goalsByMonthChart;
+<div id="imageModal" class="modal" onclick="closeModal()">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="modalImage">
+</div>
 
-function updateMonthChart(data){
+<script>
+// --- Variabili principali ---
+let monthChart, goalsByMonthChart;
+let currentData = [], filteredData = [];
+let currentPage = 1;
+const rowsPerPage = 10;
+const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
+
+// --- Upload CSV ---
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const errorMsg = document.getElementById('errorMsg');
+
+uploadArea.onclick = () => fileInput.click();
+uploadArea.addEventListener('dragover', e=>{ e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', ()=>{ uploadArea.classList.remove('dragover'); });
+uploadArea.addEventListener('drop', e=>{ e.preventDefault(); uploadArea.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e=>{ handleFile(e.target.files[0]); });
+
+function getLocalImagePath(name){ return name?.trim() ? `images/${name.trim()}` : ''; }
+function showImage(path){ const m=document.getElementById('imageModal'); const i=document.getElementById('modalImage'); m.style.display='flex'; i.src=path; }
+function closeModal(){ document.getElementById('imageModal').style.display='none'; }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+function handleFile(file){
+    if(!file) return;
+    errorMsg.textContent=''; fileInfo.textContent=`📁 Loading ${file.name}...`;
+    const reader = new FileReader();
+    reader.onload = e=>{
+        try{
+            const text=e.target.result;
+            const delim = text.split('\n')[0].includes('\t') ? '\t' : ',';
+            const lines=text.split('\n').filter(l=>l.trim());
+            const headers=lines[0].split(delim).map(h=>h.trim().toLowerCase());
+            const siteIdx=headers.findIndex(h=>h.includes('site')||h.includes('sito')||h.includes('url'));
+            const dateIdx=headers.findIndex(h=>h.includes('last')||h.includes('date')||h.includes('data'));
+            const sectorIdx=headers.findIndex(h=>h.includes('sector')&&h.includes('attack'));
+            const goalIdx=headers.findIndex(h=>h.includes('goal')||h.includes('obiettivo'));
+            const screenshotIdx=headers.findIndex(h=>h.includes('screenshot')||h.includes('image')||h.includes('foto'));
+            if(siteIdx===-1||sectorIdx===-1||goalIdx===-1){ errorMsg.textContent='⚠️ Columns missing'; return; }
+            const data=[];
+            for(let i=1;i<lines.length;i++){
+                const values=lines[i].split(delim);
+                if(!values[siteIdx]) continue;
+                data.push({
+                    site: values[siteIdx]||'',
+                    date: dateIdx!==-1?values[dateIdx]:'',
+                    sector: sectorIdx!==-1?values[sectorIdx].trim().toUpperCase():'UNKNOWN',
+                    goal: goalIdx!==-1?values[goalIdx].trim().toUpperCase():'UNKNOWN',
+                    screenshot: screenshotIdx!==-1?values[screenshotIdx]:'',
+                    rowIndex:i
+                });
+            }
+            currentData=data; filteredData=data;
+            document.getElementById('tableContainer').classList.add('active');
+            populateFilters(data);
+            displayPage(data,1);
+            updateMultiLineCharts(data);
+        }catch(err){ errorMsg.textContent='⚠️ Parse error: '+err.message; }
+    };
+    reader.readAsText(file);
+}
+
+// --- Tabelle & Filtri ---
+document.getElementById('dateStartFilter').addEventListener('change', applyFilters);
+document.getElementById('dateEndFilter').addEventListener('change', applyFilters);
+document.getElementById('sectorFilter').addEventListener('change', applyFilters);
+document.getElementById('goalFilter').addEventListener('change', applyFilters);
+document.getElementById('resetFiltersBtn').addEventListener('click', ()=>{
+    document.getElementById('dateStartFilter').value='';
+    document.getElementById('dateEndFilter').value='';
+    document.getElementById('sectorFilter').value='';
+    document.getElementById('goalFilter').value='';
+    applyFilters();
+});
+
+function applyFilters(){
+    const ds=document.getElementById('dateStartFilter').value;
+    const de=document.getElementById('dateEndFilter').value;
+    const sf=document.getElementById('sectorFilter').value;
+    const gf=document.getElementById('goalFilter').value;
+    filteredData=currentData.filter(r=>{
+        if(ds&&r.date<ds) return false;
+        if(de&&r.date>de) return false;
+        if(sf&&r.sector!==sf) return false;
+        if(gf&&r.goal!==gf) return false;
+        return true;
+    });
+    displayPage(filteredData,1);
+    updateMultiLineCharts(filteredData);
+}
+
+function populateFilters(data){
+    const sectors=[...new Set(data.map(r=>r.sector))].sort();
+    const sectorSelect=document.getElementById('sectorFilter');
+    sectorSelect.innerHTML='<option value="">All Sectors</option>';
+    sectors.forEach(s=>{ sectorSelect.innerHTML+=`<option value="${s}">${s}</option>`; });
+    
+    const goals=[...new Set(data.map(r=>r.goal))].sort();
+    const goalSelect=document.getElementById('goalFilter');
+    goalSelect.innerHTML='<option value="">All Goals</option>';
+    goals.forEach(g=>{ goalSelect.innerHTML+=`<option value="${g}">${g}</option>`; });
+}
+
+// --- Paginazione ---
+document.getElementById('prevBtn').addEventListener('click', ()=>{ if(currentPage>1) displayPage(filteredData,currentPage-1); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ if(currentPage<Math.ceil(filteredData.length/rowsPerPage)) displayPage(filteredData,currentPage+1); });
+
+function displayPage(data,page){
+    currentPage=page;
+    const tbody=document.getElementById('tableBody');
+    tbody.innerHTML='';
+    const start=(page-1)*rowsPerPage;
+    const end=Math.min(start+rowsPerPage,data.length);
+    if(data.length===0){ tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data found</td></tr>'; }
+    for(let i=start;i<end;i++){
+        const r=data[i];
+        tbody.innerHTML+=`<tr>
+            <td>${r.site}</td>
+            <td>${r.date||'-'}</td>
+            <td>${r.sector}</td>
+            <td>${r.goal}</td>
+            <td class="screenshot-cell">
+                ${r.screenshot ? `<img src="${getLocalImagePath(r.screenshot)}" class="screenshot-thumbnail" onclick="showImage('${getLocalImagePath(r.screenshot)}')">` : '-'}
+            </td>
+        </tr>`;
+    }
+    document.getElementById('pageInfo').textContent=`Page ${page} of ${Math.ceil(data.length/rowsPerPage) || 1}`;
+}
+
+// --- Chart.js MultiLine ---
+function updateMultiLineCharts(data){
+    const months=["01","02","03","04","05","06","07","08","09","10","11","12"];
+    const monthCounts={};
+    const goalOverTime={};
+
+    data.forEach(r=>{
+        if(!r.date) return;
+        const m=r.date.slice(0,7);
+        monthCounts[m]=(monthCounts[m]||0)+1;
+        if(!goalOverTime[r.goal]) goalOverTime[r.goal]={};
+        goalOverTime[r.goal][m]=(goalOverTime[r.goal][m]||0)+1;
+    });
+
+    const sortedMonths=[...new Set(data.map(r=>r.date.slice(0,7)))].sort();
+    
+    // --- Month Chart ---
+    const monthLabels=sortedMonths;
+    const monthData=monthLabels.map(m=>monthCounts[m]||0);
     if(monthChart) monthChart.destroy();
-    const months = {};
-    data.forEach(r => {
-        if(r.date && r.date.length >= 7) {
-            const m = r.date.slice(0, 7);
-            months[m] = (months[m] || 0) + 1;
-        }
-    });
-    const sorted = Object.keys(months).sort();
-    const counts = sorted.map(m => months[m]);
-    
-    const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-    const labels = sorted.map(m => {
-        const [year, month] = m.split('-');
-        return `${monthNames[parseInt(month) - 1]} ${year}`;
-    });
-    
-    monthChart = new Chart(document.getElementById('monthChart'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Campagne',
-                data: counts,
-                backgroundColor: 'rgba(41, 98, 255, 0.25)',
-                borderColor: '#2962FF',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 6,
-                pointBackgroundColor: '#2962FF',
-                pointBorderColor: '#FFFFFF',
-                pointBorderWidth: 3,
-                pointHoverRadius: 8
+    monthChart=new Chart(document.getElementById('monthChart'),{
+        type:'line',
+        data:{
+            labels:monthLabels,
+            datasets:[{
+                label:'Attacks per Month',
+                data:monthData,
+                borderColor:'#2962FF',
+                backgroundColor:'rgba(41,98,255,0.2)',
+                tension:0.3,
+                fill:true,
+                pointRadius:5,
+                pointHoverRadius:7
             }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {display: false},
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    titleColor: '#FFFFFF',
-                    bodyColor: '#FFFFFF',
-                    callbacks: {label: function(ctx){ return `Campagne: ${ctx.parsed.y}`; }}
-                }
-            },
-            scales: {
-                y: { beginAtZero:true, ticks:{color:'#a8b2c1', font:{size:12}}, grid:{color:'rgba(168,178,193,0.1)'} },
-                x: { ticks:{color:'#a8b2c1', font:{size:11}}, grid:{display:false} }
-            }
-        }
+        options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
     });
+
+    // --- Goals over Time Chart ---
+    const goalsLabels=Object.keys(goalOverTime);
+    const datasets=goalsLabels.map((g,i)=>({
+        label:g,
+        data:monthLabels.map(m=>goalOverTime[g][m]||0),
+        borderColor:colors[i%colors.length],
+        backgroundColor:colors[i%colors.length]+'33',
+        tension:0.4,
+        fill:false,
+        pointRadius:4,
+        pointHoverRadius:6
+    }));
+    if(goalsByMonthChart) goalsByMonthChart.destroy();
+    goalsByMonthChart=new Chart(document.getElementById('goalsByMonthChart'),{
+        type:'line',
+        data:{labels:monthLabels,datasets:datasets},
+        options:{responsive:true, plugins:{legend:{position:'bottom'}}, scales:{y:{beginAtZero:true}}}
+    });
+
+    document.getElementById('chartsGridMonthAndGoals').style.display='grid';
+    setTimeout(()=>document.getElementById('chartsGridMonthAndGoals').classList.add('active'),50);
 }
 
-function updateGoalsByMonthChart(data){
-    if(goalsByMonthChart) goalsByMonthChart.destroy();
-    const monthGoalMap = {};
-    const allGoals = new Set();
-    data.forEach(r => {
-        if(r.date && r.date.length >= 7 && r.goal) {
-            const month = r.date.slice(0, 7);
-            allGoals.add(r.goal);
-            if(!monthGoalMap[month]) monthGoalMap[month] = {};
-            monthGoalMap[month][r.goal] = (monthGoalMap[month][r.goal] || 0) + 1;
-        }
-    });
-    const sortedMonths = Object.keys(monthGoalMap).sort();
-    const goalCounts = {};
-    data.forEach(r => { if(r.goal) goalCounts[r.goal] = (goalCounts[r.goal] || 0) + 1; });
-    const sortedGoals = Object.entries(goalCounts).sort((a,b) => b[1]-a[1]).map(([g])=>g);
-    
-    const lineColors = [
-        '#2962FF', '#F44336', '#4CAF50', '#FF9800', '#9C27B0',
-        '#00BCD4', '#E91E63', '#009688', '#FFC107', '#3F51B5',
-        '#FF5722', '#795548', '#607D8B', '#CDDC39', '#8BC34A'
-    ];
-    
-    const datasets = sortedGoals.map((goal, idx)=>({
-        label: goal,
-        data: sortedMonths.map(month=>monthGoalMap[month][goal] || 0),
-        borderColor: lineColors[idx % lineColors.length],
-        backgroundColor: 'transparent',
-        borderWidth: 3,
-        fill: false,
-        tension: 0.4,
-        pointRadius: 5,
-        pointBackgroundColor: lineColors[idx % lineColors.length],
-        pointBorderColor: '#FFFFFF',
-        pointBorderWidth: 2
-    }));
-    
-    goalsByMonthChart = new Chart(document.getElementById('goalsByMonthChart'), {
-        type: 'line',
-        data: { labels: sortedMonths, datasets: datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position:'bottom', labels:{color:'#a8b2c1', font:{size:10}, boxWidth:15, padding:8} },
-                tooltip: { backgroundColor:'rgba(0,0,0,0.8)', titleColor:'#FFFFFF', bodyColor:'#FFFFFF' }
-            },
-            scales: {
-                y: { beginAtZero:true, ticks:{color:'#a8b2c1', font:{size:12}}, grid:{color:'rgba(168,178,193,0.1)'} },
-                x: { ticks:{color:'#a8b2c1', font:{size:10}}, grid:{display:false} }
-            }
-        }
-    });
-}
+// --- PDF Generation ---
+document.getElementById('generatePdfBtn').addEventListener('click',()=>{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text("Social Engineering Report", 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`,14,28);
+    doc.text(`Total Records: ${filteredData.length}`,14,34);
+    doc.save('SE_report.pdf');
+});
 </script>
-</div>
 </body>
 </html>
