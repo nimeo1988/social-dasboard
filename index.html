@@ -1249,90 +1249,215 @@ function updateGoalsByMonthChart(data){
 
 // PDF GENERATION
 document.getElementById('generatePdfBtn').addEventListener('click', async function() {
-    if(filteredData.length === 0){
-        alert('No data to export!');
+    if(!currentData || currentData.length === 0){
+        alert('⚠️ Nessun dato da esportare!');
         return;
     }
 
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
+    const pdf = new jsPDF('p', 'pt', 'a4'); // portrait, points, A4
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const margin = 40;
 
-    const today = new Date();
-    const formatDate = (d) => `${('0'+d.getDate()).slice(-2)}/${('0'+(d.getMonth()+1)).slice(-2)}/${d.getFullYear()}`;
-    const reportDate = formatDate(today);
+    // ==================== PAGINA 1: COPERTINA ====================
+    pdf.setFillColor(255, 255, 255);
+    pdf.rect(0, 0, pageWidth, pdf.internal.pageSize.getHeight(), 'F');
 
-    const dateStart = document.getElementById('dateStartFilter').value || filteredData[0].date;
-    const dateEnd = document.getElementById('dateEndFilter').value || filteredData[filteredData.length-1].date;
+    pdf.setFont('Helvetica', 'bold');
+    pdf.setFontSize(28);
+    pdf.text('PHISHING DASHBOARD REPORT', pageWidth / 2, 120, { align: 'center' });
 
-    const uniqueDomains = new Set(filteredData.map(r => r.site));
-    const uniqueSectors = new Set(filteredData.map(r => r.sector));
-    const uniqueGoals = new Set(filteredData.map(r => r.goal));
+    pdf.setFontSize(16);
+    pdf.setFont('Helvetica', 'normal');
+    pdf.text('Campagne di Phishing – Analisi del Periodo', pageWidth / 2, 160, { align: 'center' });
 
-    // --- PAGINA 1: Titolo + Sintesi ---
-    doc.setFontSize(18);
-    doc.text('PHISHING DASHBOARD REPORT', 14, 20);
-    doc.setFontSize(12);
-    doc.text(`Campagne di Phishing - Analisi del Periodo`, 14, 28);
-    doc.text(`Periodo analizzato: dal ${dateStart} al ${dateEnd}`, 14, 34);
-    doc.text(`Report generato il: ${reportDate}`, 14, 40);
+    const minDate = currentData.map(r => r.date).filter(Boolean).sort()[0] || 'N/A';
+    const maxDate = currentData.map(r => r.date).filter(Boolean).sort().reverse()[0] || 'N/A';
+    const today = new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' });
 
-    doc.setFontSize(14);
-    doc.text('SINTESI ESECUTIVA', 14, 50);
-    doc.setFontSize(11);
-    doc.text(`Nel periodo analizzato sono state identificate ${filteredData.length} campagne di phishing`, 14, 58);
-    doc.text(`distribuite su ${uniqueDomains.size} domini malevoli unici. Gli attacchi hanno colpito ${uniqueSectors.size} settori`, 14, 64);
-    doc.text(`diversi attraverso ${uniqueGoals.size} tipologie di attacco differenti.`, 14, 70);
+    pdf.setFontSize(12);
+    pdf.text(`Periodo analizzato: dal ${minDate} al ${maxDate}`, pageWidth / 2, 190, { align: 'center' });
+    pdf.text(`Report generato il: ${today}`, pageWidth / 2, 210, { align: 'center' });
 
-    // Statistiche chiave in box
-    const stats = [
-        {label: 'Campagne rilevate', value: filteredData.length},
-        {label: 'Domini malevoli', value: uniqueDomains.size},
-        {label: 'Settori colpiti', value: uniqueSectors.size},
-        {label: 'Tipologie attacco', value: uniqueGoals.size}
+    pdf.addPage();
+
+    // ==================== PAGINA 2: SINTESI ====================
+    pdf.setFontSize(16);
+    pdf.setFont('Helvetica', 'bold');
+    pdf.text('SINTESI ESECUTIVA', margin, 50);
+
+    pdf.setFont('Helvetica', 'normal');
+    pdf.setFontSize(12);
+    pdf.text(`Nel periodo analizzato sono state identificate ${currentData.length} campagne di phishing.`, margin, 75);
+
+    const uniqueDomains = new Set(currentData.map(r => r.site)).size;
+    const uniqueSectors = new Set(currentData.map(r => r.sector)).size;
+    const uniqueGoals = new Set(currentData.map(r => r.goal)).size;
+
+    const metrics = [
+        {label: 'Campagne rilevate', value: currentData.length},
+        {label: 'Domini malevoli', value: uniqueDomains},
+        {label: 'Settori colpiti', value: uniqueSectors},
+        {label: 'Tipologie attacco', value: uniqueGoals}
     ];
 
-    let startY = 80;
-    stats.forEach(s => {
-        doc.setDrawColor(41,98,255);
-        doc.setFillColor(41,98,255,0.05);
-        doc.roundedRect(14, startY, 80, 12, 2, 2, 'FD');
-        doc.setFontSize(10);
-        doc.setTextColor(0,0,0);
-        doc.text(`${s.label}: ${s.value}`, 16, startY + 8);
-        startY += 18;
+    let yPos = 100;
+    metrics.forEach(m => {
+        pdf.setFillColor(41, 98, 255);
+        pdf.setTextColor(255, 255, 255);
+        pdf.rect(margin, yPos, 120, 30, 'F');
+        pdf.setFontSize(10);
+        pdf.text(m.label, margin + 60, yPos + 12, { align: 'center' });
+        pdf.setFontSize(14);
+        pdf.text(`${m.value}`, margin + 60, yPos + 25, { align: 'center' });
+        yPos += 50;
     });
 
-    // --- PAGINA 2: Top 5 Settori ---
-    doc.addPage();
-    doc.setFontSize(14);
-    doc.text('I settori più colpiti', 14, 20);
-    doc.setFontSize(11);
-    doc.text(`Il grafico seguente evidenzia i 5 settori maggiormente bersagliati dagli attacchi phishing, con "${Object.entries(filteredData.reduce((acc,r)=>{
-        acc[r.sector] = (acc[r.sector]||0)+1;
-        return acc;
-    },{})).sort((a,b)=>b[1]-a[1])[0][0]}" in testa.`, 14, 28);
+    pdf.addPage();
 
-    if(top5SectorsBarChart){
-        const canvas = document.getElementById('top5SectorsBarChart');
-        const imgData = canvas.toDataURL('image/png');
-        doc.addImage(imgData, 'PNG', 14, 40, 180, 90);
-    }
+    // ==================== PAGINA 3: TOP 5 SETTORI ====================
+    pdf.setFontSize(16);
+    pdf.setTextColor(0,0,0);
+    pdf.text('I 5 SETTORI PIÙ COLPITI', margin, 50);
 
-    // --- PAGINA 3: Analisi temporale ---
-    doc.addPage();
-    doc.setFontSize(14);
-    doc.text('Analisi temporale', 14, 20);
-    doc.setFontSize(11);
-    doc.text(`Il grafico seguente mostra la distribuzione temporale delle campagne di phishing nel periodo analizzato.`, 14, 28);
+    // crea il grafico barre come immagine
+    const top5Sectors = {};
+    currentData.forEach(r => { top5Sectors[r.sector] = (top5Sectors[r.sector] || 0) + 1 });
+    const sortedSectors = Object.entries(top5Sectors).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    
+    const canvasBar = document.createElement('canvas');
+    canvasBar.width = 1000;
+    canvasBar.height = 400;
+    new Chart(canvasBar, {
+        type: 'bar',
+        data: {
+            labels: sortedSectors.map(([k]) => k),
+            datasets: [{
+                label: 'Campagne',
+                data: sortedSectors.map(([_,v])=>v),
+                backgroundColor: ['#2962FF','#F44336','#4CAF50','#FF9800','#9C27B0']
+            }]
+        },
+        options: { responsive: false, plugins:{legend:{display:false}} }
+    });
+    const barImg = canvasBar.toDataURL('image/png');
+    pdf.addImage(barImg, 'PNG', margin, 70, pageWidth - 2*margin, 250);
 
-    if(monthChart){
-        const canvas = document.getElementById('monthChart');
-        const imgData = canvas.toDataURL('image/png');
-        doc.addImage(imgData, 'PNG', 14, 40, 180, 90);
-    }
+    pdf.text(`Il grafico evidenzia i settori maggiormente bersagliati, permettendo di identificare le aree più vulnerabili.`, margin, 340, { maxWidth: pageWidth - 2*margin });
 
-    doc.save('Phishing_Report.pdf');
+    pdf.addPage();
+
+    // ==================== PAGINA 4: DISTRIBUZIONE TEMPORALE ====================
+    pdf.setFontSize(16);
+    pdf.text('ANALISI TEMPORALE DELLE CAMPAGNE', margin, 50);
+
+    // grafico line
+    const monthCounts = {};
+    currentData.forEach(r => {
+        if(r.date && r.date.length >= 7){
+            const m = r.date.slice(0,7);
+            monthCounts[m] = (monthCounts[m] || 0)+1;
+        }
+    });
+    const sortedMonths = Object.keys(monthCounts).sort();
+    const counts = sortedMonths.map(m=>monthCounts[m]);
+    const monthCanvas = document.createElement('canvas');
+    monthCanvas.width = 1000;
+    monthCanvas.height = 400;
+    new Chart(monthCanvas,{
+        type:'line',
+        data:{
+            labels: sortedMonths,
+            datasets:[{
+                label:'Campagne',
+                data: counts,
+                borderColor:'#2962FF',
+                backgroundColor:'rgba(41,98,255,0.15)',
+                fill:true,
+                tension:0.4
+            }]
+        },
+        options:{responsive:false, plugins:{legend:{display:false}}}
+    });
+    const monthImg = monthCanvas.toDataURL('image/png');
+    pdf.addImage(monthImg, 'PNG', margin, 70, pageWidth - 2*margin, 250);
+
+    pdf.text(`Il grafico mostra l’evoluzione delle campagne mese per mese, evidenziando i picchi di attività phishing.`, margin, 340, { maxWidth: pageWidth - 2*margin });
+
+    pdf.addPage();
+
+    // ==================== PAGINA 5: OBIETTIVI ATTACCO ====================
+    pdf.setFontSize(16);
+    pdf.text('DISTRIBUZIONE OBIETTIVI DI ATTACCO', margin, 50);
+
+    const goalsCount = {};
+    currentData.forEach(r => { goalsCount[r.goal] = (goalsCount[r.goal] || 0) +1 });
+    const sortedGoals = Object.entries(goalsCount).sort((a,b)=>b[1]-a[1]);
+
+    const goalsCanvas = document.createElement('canvas');
+    goalsCanvas.width = 1000;
+    goalsCanvas.height = 400;
+    new Chart(goalsCanvas,{
+        type:'doughnut',
+        data:{
+            labels: sortedGoals.map(([k])=>k),
+            datasets:[{
+                data: sortedGoals.map(([_,v])=>v),
+                backgroundColor: colors
+            }]
+        },
+        options:{responsive:false, plugins:{legend:{position:'bottom'}}}
+    });
+    const goalsImg = goalsCanvas.toDataURL('image/png');
+    pdf.addImage(goalsImg,'PNG',margin,70,pageWidth-2*margin,250);
+
+    pdf.text(`Questo grafico evidenzia le tipologie di attacco più utilizzate dai phisher, utile per capire le strategie predominanti.`, margin,340,{ maxWidth: pageWidth - 2*margin });
+
+    // ==================== PAGINA 6: CAMPAGNE PER OBIETTIVO NEL TEMPO ====================
+    pdf.addPage();
+    pdf.setFontSize(16);
+    pdf.text('CAMPAGNE PER OBIETTIVO NEL TEMPO', margin, 50);
+
+    const monthGoalMap = {};
+    const allGoalsSet = new Set();
+    currentData.forEach(r => {
+        if(r.date && r.date.length >=7 && r.goal){
+            const month = r.date.slice(0,7);
+            allGoalsSet.add(r.goal);
+            if(!monthGoalMap[month]) monthGoalMap[month]={};
+            monthGoalMap[month][r.goal]=(monthGoalMap[month][r.goal]||0)+1;
+        }
+    });
+    const sortedMonths2 = Object.keys(monthGoalMap).sort();
+    const allGoalsArr = Array.from(allGoalsSet);
+    const multiLineCanvas = document.createElement('canvas');
+    multiLineCanvas.width=1000;
+    multiLineCanvas.height=400;
+
+    new Chart(multiLineCanvas,{
+        type:'line',
+        data:{
+            labels: sortedMonths2,
+            datasets: allGoalsArr.map((goal, idx)=>({
+                label:goal,
+                data: sortedMonths2.map(m=>monthGoalMap[m][goal]||0),
+                borderColor: colors[idx % colors.length],
+                backgroundColor:'transparent',
+                fill:false,
+                tension:0.4
+            }))
+        },
+        options:{responsive:false, plugins:{legend:{position:'bottom'}}}
+    });
+    const multiLineImg = multiLineCanvas.toDataURL('image/png');
+    pdf.addImage(multiLineImg,'PNG',margin,70,pageWidth-2*margin,250);
+
+    pdf.text(`Evidenzia come le campagne per settore e obiettivo siano variate nel tempo, utile per analisi temporale avanzata.`, margin,340,{ maxWidth: pageWidth - 2*margin });
+
+    // ==================== SALVATAGGIO PDF ====================
+    pdf.save(`Phishing_Report_${today.replace(/\//g,'-')}.pdf`);
 });
+
 
 
 
