@@ -532,6 +532,21 @@ fileInput.addEventListener('change', (e) => {
     if(file) handleFile(file);
 });
 
+function parseDateSafe(dateStr) {
+    if (!dateStr) return null;
+
+    if (dateStr.includes('-')) {
+        return new Date(dateStr.substring(0, 10));
+    }
+
+    if (dateStr.includes('/')) {
+        const [d, m, y] = dateStr.split('/');
+        return new Date(`${y}-${m}-${d}`);
+    }
+
+    return null;
+}
+
 fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if(file) handleFile(file);
