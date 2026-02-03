@@ -45,6 +45,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); }
 
 
 function handleFile(file){
+    if(!file) return;
     errorMsg.textContent=''; fileInfo.textContent=`📁 Loading ${file.name}...`;
     const reader = new FileReader();
     reader.onload = function(e){
@@ -96,6 +97,7 @@ function handleFile(file){
             currentData=data; filteredData=data;
             fileInfo.textContent=`✓ Successfully loaded ${data.length} records`;
             document.getElementById('tableContainer').classList.add('active');
+            document.getElementById('filterSection').classList.add('active');
             populateFilters(data); displayPage(filteredData,1); updateAllCharts(filteredData);
 
         }catch(err){ errorMsg.textContent='⚠️ Error: '+err.message; }
@@ -143,4 +145,113 @@ function populateFilters(data){
 
 
 document.getElementById('prevBtn').onclick=()=>{ if(currentPage>1){ currentPage--; displayPage(filteredData,currentPage); } };
-document.getElementById('nextBtn').onclick=()=>{ const total=Mat
+document.getElementById('nextBtn').onclick=()=>{ const totalPages=Math.ceil(filteredData.length/rowsPerPage); if(currentPage<totalPages){ currentPage++; displayPage(filteredData,currentPage); } };
+
+function displayPage(data,page){
+    currentPage=page;
+    const start=(page-1)*rowsPerPage;
+    const end=start+rowsPerPage;
+    const pageData=data.slice(start,end);
+    const tbody=document.getElementById('tableBody');
+    tbody.innerHTML='';
+    pageData.forEach((row,idx)=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+            <td>${start+idx+1}</td>
+            <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis" title="${row.site}">${row.site}</td>
+            <td>${row.date}</td>
+            <td>${row.sector}</td>
+            <td>${row.goal}</td>
+            <td>${row.screenshot?`<img src="${getLocalImagePath(row.screenshot)}" class="screenshot-thumb" onclick="showImage('${getLocalImagePath(row.screenshot)}')" alt="Screenshot">`:'-'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+    const totalPages=Math.ceil(data.length/rowsPerPage);
+    document.getElementById('pageInfo').textContent=`Page ${page} of ${totalPages} (${data.length} records)`;
+    document.getElementById('prevBtn').disabled=page===1;
+    document.getElementById('nextBtn').disabled=page===totalPages||totalPages===0;
+}
+
+function updateAllCharts(data){
+    updateSectorsPieChart(data);
+    updateTop5SectorsBarChart(data);
+    updateGoalsPieChart(data);
+    updateMonthChart(data);
+    updateGoalsByMonthChart(data);
+}
+
+function updateSectorsPieChart(data){
+    const sectorCounts={};
+    data.forEach(r=>sectorCounts[r.sector]=(sectorCounts[r.sector]||0)+1);
+    const labels=Object.keys(sectorCounts);
+    const values=Object.values(sectorCounts);
+    if(allSectorsChart) allSectorsChart.destroy();
+    const ctx=document.getElementById('allSectorsChart').getContext('2d');
+    allSectorsChart=new Chart(ctx,{
+        type:'doughnut',
+        data:{labels:labels,datasets:[{data:values,backgroundColor:colors,borderColor:'#1a1d2e',borderWidth:3}]},
+        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{color:'#c5c7d0',font:{size:10},padding:8,boxWidth:12}}}}
+    });
+}
+
+function updateTop5SectorsBarChart(data){
+    const sectorCounts={};
+    data.forEach(r=>sectorCounts[r.sector]=(sectorCounts[r.sector]||0)+1);
+    const sorted=Object.entries(sectorCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const labels=sorted.map(s=>s[0]);
+    const values=sorted.map(s=>s[1]);
+    if(top5SectorsBarChart) top5SectorsBarChart.destroy();
+    const ctx=document.getElementById('top5SectorsBarChart').getContext('2d');
+    top5SectorsBarChart=new Chart(ctx,{
+        type:'bar',
+        data:{labels:labels,datasets:[{label:'Attacks',data:values,backgroundColor:colors.slice(0,5),borderWidth:0}]},
+        options:{responsive:true,maintainAspectRatio:true,scales:{y:{beginAtZero:true,ticks:{color:'#a0a4b8',font:{size:10}},grid:{color:'#2d3142'}},x:{ticks:{color:'#a0a4b8',font:{size:9},maxRotation:45,minRotation:45},grid:{display:false}}},plugins:{legend:{display:false}}}
+    });
+}
+
+function updateGoalsPieChart(data){
+    const goalCounts={};
+    data.forEach(r=>goalCounts[r.goal]=(goalCounts[r.goal]||0)+1);
+    const labels=Object.keys(goalCounts);
+    const values=Object.values(goalCounts);
+    if(goalsPieChart) goalsPieChart.destroy();
+    const ctx=document.getElementById('goalsPieChart').getContext('2d');
+    goalsPieChart=new Chart(ctx,{
+        type:'doughnut',
+        data:{labels:labels,datasets:[{data:values,backgroundColor:colors,borderColor:'#1a1d2e',borderWidth:3}]},
+        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:'bottom',labels:{color:'#c5c7d0',font:{size:10},padding:8,boxWidth:12}}}}
+    });
+}
+
+function updateMonthChart(data){
+    const monthCounts={};
+    data.forEach(r=>{if(r.date){const month=r.date.substring(0,7);monthCounts[month]=(monthCounts[month]||0)+1;}});
+    const sorted=Object.keys(monthCounts).sort();
+    const labels=sorted;
+    const values=sorted.map(m=>monthCounts[m]);
+    if(monthChart) monthChart.destroy();
+    const ctx=document.getElementById('monthChart').getContext('2d');
+    monthChart=new Chart(ctx,{
+        type:'line',
+        data:{labels:labels,datasets:[{label:'ATTACKS',data:values,borderColor:'#5a8db8',backgroundColor:'rgba(90,141,184,0.1)',fill:true,tension:0.4,borderWidth:2,pointRadius:4,pointBackgroundColor:'#5a8db8',pointBorderColor:'#1a1d2e',pointBorderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:true,scales:{y:{beginAtZero:true,ticks:{color:'#a0a4b8',font:{size:10}},grid:{color:'#2d3142'}},x:{ticks:{color:'#a0a4b8',font:{size:9},maxRotation:45,minRotation:45},grid:{color:'#2d3142'}}},plugins:{legend:{display:false}}}
+    });
+}
+
+function updateGoalsByMonthChart(data){
+    const goalByMonth={};
+    const allGoals=new Set();
+    data.forEach(r=>{if(r.date){const month=r.date.substring(0,7);if(!goalByMonth[month])goalByMonth[month]={};goalByMonth[month][r.goal]=(goalByMonth[month][r.goal]||0)+1;allGoals.add(r.goal);}});
+    const months=Object.keys(goalByMonth).sort();
+    const goalsList=Array.from(allGoals);
+    const datasets=goalsList.map((goal,idx)=>({label:goal,data:months.map(m=>goalByMonth[m][goal]||0),borderColor:colors[idx%colors.length],backgroundColor:colors[idx%colors.length],fill:false,tension:0.4,borderWidth:2,pointRadius:3,pointBackgroundColor:colors[idx%colors.length],pointBorderColor:'#1a1d2e',pointBorderWidth:1}));
+    if(goalsByMonthChart) goalsByMonthChart.destroy();
+    const ctx=document.getElementById('goalsByMonthChart').getContext('2d');
+    goalsByMonthChart=new Chart(ctx,{
+        type:'line',
+        data:{labels:months,datasets:datasets},
+        options:{responsive:true,maintainAspectRatio:true,scales:{y:{beginAtZero:true,ticks:{color:'#a0a4b8',font:{size:10}},grid:{color:'#2d3142'}},x:{ticks:{color:'#a0a4b8',font:{size:9},maxRotation:45,minRotation:45},grid:{color:'#2d3142'}}},plugins:{legend:{position:'bottom',labels:{color:'#c5c7d0',font:{size:9},padding:6,boxWidth:10}}}}
+    });
+}
+
+window.addEventListener('resize',()=>{if(filteredData.length>0){updateAllCharts(filteredData);}});
