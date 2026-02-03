@@ -1114,13 +1114,13 @@ function updateMonthChart(data){
     });
     const sorted = Object.keys(months).sort();
     const counts = sorted.map(m => months[m]);
-    
+
     const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
     const labels = sorted.map(m => {
         const [year, month] = m.split('-');
         return `${monthNames[parseInt(month) - 1]} ${year}`;
     });
-    
+
     monthChart = new Chart(document.getElementById('monthChart'), {
         type: 'line',
         data: {
@@ -1128,48 +1128,50 @@ function updateMonthChart(data){
             datasets: [{
                 label: 'Campagne',
                 data: counts,
-                backgroundColor: 'rgba(41, 98, 255, 0.2)',
-                borderColor: '#2962FF',
-                borderWidth: 3,
+                borderColor: colors[0],       // usa il primo colore definito nell'HTML
+                backgroundColor: 'rgba(41, 98, 255, 0.15)', // area sotto linea leggermente trasparente
                 fill: true,
-                tension: 0.3,
+                tension: 0.4,
+                borderWidth: 3,
                 pointRadius: 6,
-                pointBackgroundColor: '#2962FF',
-                pointBorderColor: '#FFFFFF',
-                pointBorderWidth: 3,
-                pointHoverRadius: 8
+                pointBackgroundColor: colors[0],
+                pointBorderColor: '#1a1d35',
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: colors[0],
+                pointHoverBorderColor: '#fff'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {display: false},
+                legend: {
+                    display: false
+                },
                 tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    titleColor: '#FFFFFF',
-                    bodyColor: '#FFFFFF',
-                    callbacks: {
-                        label: function(context) {
-                            return `Campagne: ${context.parsed.y}`;
-                        }
-                    }
+                    backgroundColor: 'rgba(0,0,0,0.85)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    cornerRadius: 6,
+                    padding: 10,
+                    mode: 'index',
+                    intersect: false
                 }
             },
             scales: {
-                y: {
-                    beginAtZero: true, 
-                    ticks: {color: '#a8b2c1', font: {size: 12}}, 
-                    grid: {color: 'rgba(168,178,193,0.1)'}
-                },
                 x: {
-                    ticks: {color: '#a8b2c1', font: {size: 11}}, 
-                    grid: {display: false}
+                    ticks: { color: '#a8b2c1', font: { size: 11 } },
+                    grid: { display: false }
+                },
+                y: {
+                    ticks: { color: '#a8b2c1', font: { size: 11 } },
+                    grid: { color: 'rgba(168,178,193,0.1)' }
                 }
             }
         }
     });
 }
+
 
 function updateGoalsByMonthChart(data){
     if(goalsByMonthChart) goalsByMonthChart.destroy();
@@ -1189,27 +1191,23 @@ function updateGoalsByMonthChart(data){
         if(r.goal) goalCounts[r.goal] = (goalCounts[r.goal] || 0) + 1;
     });
     const sortedGoals = Object.entries(goalCounts).sort((a,b) => b[1] - a[1]).map(([g]) => g);
-    
-    const lineColors = [
-        '#2962FF', '#F44336', '#4CAF50', '#FF9800', '#9C27B0',
-        '#00BCD4', '#E91E63', '#009688', '#FFC107', '#3F51B5',
-        '#FF5722', '#795548', '#607D8B', '#CDDC39', '#8BC34A'
-    ];
-    
+
     const datasets = sortedGoals.map((goal, idx) => ({
         label: goal,
         data: sortedMonths.map(month => monthGoalMap[month][goal] || 0),
-        borderColor: lineColors[idx % lineColors.length],
+        borderColor: colors[idx % colors.length],  // usa i colori dell'HTML
         backgroundColor: 'transparent',
         borderWidth: 3,
         fill: false,
         tension: 0.4,
-        pointRadius: 4,
-        pointBackgroundColor: lineColors[idx % lineColors.length],
-        pointBorderColor: '#FFFFFF',
-        pointBorderWidth: 2
+        pointRadius: 5,
+        pointBackgroundColor: colors[idx % colors.length],
+        pointBorderColor: '#1a1d35',
+        pointHoverRadius: 7,
+        pointHoverBackgroundColor: colors[idx % colors.length],
+        pointHoverBorderColor: '#fff'
     }));
-    
+
     goalsByMonthChart = new Chart(document.getElementById('goalsByMonthChart'), {
         type: 'line',
         data: {
@@ -1222,28 +1220,32 @@ function updateGoalsByMonthChart(data){
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: {color: '#a8b2c1', font: {size: 10}, padding: 8, boxWidth: 15}
+                    labels: { color: '#a8b2c1', font: { size: 10 }, padding: 8, boxWidth: 12 }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    titleColor: '#FFFFFF',
-                    bodyColor: '#FFFFFF'
+                    backgroundColor: 'rgba(0,0,0,0.85)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    cornerRadius: 6,
+                    padding: 10,
+                    mode: 'index',
+                    intersect: false
                 }
             },
             scales: {
-                y: {
-                    beginAtZero: true, 
-                    ticks: {color: '#a8b2c1', font: {size: 12}}, 
-                    grid: {color: 'rgba(168,178,193,0.1)'}
-                },
                 x: {
-                    ticks: {color: '#a8b2c1', font: {size: 10}}, 
-                    grid: {display: false}
+                    ticks: { color: '#a8b2c1', font: { size: 11 } },
+                    grid: { display: false }
+                },
+                y: {
+                    ticks: { color: '#a8b2c1', font: { size: 11 } },
+                    grid: { color: 'rgba(168,178,193,0.1)' }
                 }
             }
         }
     });
 }
+
 
 // PDF GENERATION
 document.getElementById('generatePdfBtn').addEventListener('click', async function() {
