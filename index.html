@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+
+<html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Social Engineering Dashboard</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -185,32 +186,6 @@ input[type="date"]:focus {
 .search-box[type="date"] {
     position: relative;
     padding-right: 40px;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23a8b2c1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    background-size: 18px;
-}
-
-.search-box[type="date"]::-webkit-calendar-picker-indicator {
-    position: absolute;
-    right: 8px;
-    width: 24px;
-    height: 24px;
-}
-
-.date-tooltip {
-    position: absolute;
-    bottom: -25px;
-    left: 0;
-    font-size: 0.75rem;
-    color: #8b95a5;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.date-input-wrapper:hover .date-tooltip {
-    opacity: 1;
 }
 
 /* BUTTON */
@@ -427,6 +402,7 @@ tr:hover {
     }
 }
 </style>
+
 </head>
 
 <body>
@@ -438,83 +414,88 @@ tr:hover {
 </header>
 
 <div class="upload-section">
-    <h2>UPLOAD CSV DATA</h2>
-    
-    <div class="upload-area" id="uploadArea">
-        <div class="upload-icon">📊</div>
-        <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
-        <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
-        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
-    </div>
-    
-    <div id="fileInfo" class="file-info"></div>
-    <div id="errorMsg" class="error-msg"></div>
+    <h2>CARICA DATI CSV</h2>
+
+```
+<div class="upload-area" id="uploadArea">
+    <div class="upload-icon">📊</div>
+    <p style="font-size:1.1rem;margin-bottom:.5rem">Clicca per caricare il file CSV</p>
+    <p style="color:#8b95a5;margin-bottom:1rem">oppure trascina qui</p>
+    <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
+</div>
+
+<div id="fileInfo" class="file-info"></div>
+<div id="errorMsg" class="error-msg"></div>
+```
+
 </div>
 
 <div class="table-container" id="tableContainer">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
         <div class="date-input-wrapper">
-            <input type="date" id="dateStartFilter" class="search-box" placeholder="Start Date" title="Clicca per selezionare la data di inizio">
-            <span class="date-tooltip">📅 Data inizio</span>
+            <input type="date" id="dateStartFilter" class="search-box" placeholder="Data Inizio">
         </div>
         <div class="date-input-wrapper">
-            <input type="date" id="dateEndFilter" class="search-box" placeholder="End Date" title="Clicca per selezionare la data di fine">
-            <span class="date-tooltip">📅 Data fine</span>
+            <input type="date" id="dateEndFilter" class="search-box" placeholder="Data Fine">
         </div>
         <select id="sectorFilter" class="search-box" style="cursor:pointer;">
-            <option value="">All Sectors</option>
+            <option value="">Tutti i Settori</option>
         </select>
         <select id="goalFilter" class="search-box" style="cursor:pointer;">
-            <option value="">All Goals</option>
+            <option value="">Tutti gli Obiettivi</option>
         </select>
-        <button id="resetFiltersBtn" class="upload-btn" style="background:#e74c3c;padding:0.9rem 1rem;font-size:0.9rem;" title="Resetta tutti i filtri">
+        <button id="resetFiltersBtn" class="upload-btn" style="background:#e74c3c;padding:0.9rem 1rem;font-size:0.9rem;">
             🔄 Reset
         </button>
     </div>
-    
-    <div style="text-align:center;margin-bottom:1.5rem;">
-        <button id="generatePdfBtn" class="upload-btn" style="background:#27ae60;">
-            📄 Generate PDF Report
-        </button>
-    </div>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Site</th>
-                <th>Date</th>
-                <th>Sector Attacked</th>
-                <th>Attack Goal</th>
-                <th>Screenshot</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
-            <tr>
-                <td colspan="5" style="text-align:center;color:#8b95a5;">No data loaded</td>
-            </tr>
-        </tbody>
-    </table>
-    <div class="pagination">
-        <button id="prevBtn">← Previous</button>
-        <span id="pageInfo">Page 1</span>
-        <button id="nextBtn">Next →</button>
-    </div>
+
+```
+<div style="text-align:center;margin-bottom:1.5rem;">
+    <button id="generatePdfBtn" class="upload-btn" style="background:#27ae60;">
+        📄 Genera Report PDF
+    </button>
 </div>
 
-<!-- PRIMA RIGA: Torta Settori (sx) + Top 5 Settori Barre (dx) -->
+<table>
+    <thead>
+        <tr>
+            <th>Sito</th>
+            <th>Data</th>
+            <th>Settore Attaccato</th>
+            <th>Obiettivo Attacco</th>
+            <th>Screenshot</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody">
+        <tr>
+            <td colspan="5" style="text-align:center;color:#8b95a5;">Nessun dato caricato</td>
+        </tr>
+    </tbody>
+</table>
+<div class="pagination">
+    <button id="prevBtn">← Precedente</button>
+    <span id="pageInfo">Pagina 1</span>
+    <button id="nextBtn">Successiva →</button>
+</div>
+```
+
+</div>
+
 <div class="charts-grid-two-cols" id="chartsGridSectors" style="display:none;">
     <div class="chart-card">
         <h3>Distribuzione per Settore (Tutti)</h3>
         <div class="chart-wrapper"><canvas id="allSectorsChart"></canvas></div>
     </div>
-    
-    <div class="chart-card">
-        <h3>Top 5 Settori Attaccati</h3>
-        <div class="chart-wrapper"><canvas id="top5SectorsBarChart"></canvas></div>
-    </div>
+
+```
+<div class="chart-card">
+    <h3>Top 5 Settori Attaccati</h3>
+    <div class="chart-wrapper"><canvas id="top5SectorsBarChart"></canvas></div>
+</div>
+```
+
 </div>
 
-<!-- SECONDA RIGA: Torta Obiettivi -->
 <div class="charts-grid-single" id="chartsGridGoalsPie" style="display:none;">
     <div class="chart-card">
         <h3>Distribuzione Obiettivi di Attacco (Tutti)</h3>
@@ -522,28 +503,25 @@ tr:hover {
     </div>
 </div>
 
-<!-- TERZA RIGA: Attacchi per Mese e Attacchi per Obiettivo (2 colonne) -->
 <div class="charts-grid-two-cols" id="chartsGridMonthAndGoals" style="display:none;">
     <div class="chart-card">
         <h3>Attacchi per Mese</h3>
         <div class="chart-wrapper"><canvas id="monthChart"></canvas></div>
     </div>
-    
-    <div class="chart-card">
-        <h3>Attacchi per Obiettivo nel Tempo</h3>
-        <div class="chart-wrapper"><canvas id="goalsByMonthChart"></canvas></div>
-    </div>
+
+```
+<div class="chart-card">
+    <h3>Attacchi per Obiettivo nel Tempo</h3>
+    <div class="chart-wrapper"><canvas id="goalsByMonthChart"></canvas></div>
+</div>
+```
+
 </div>
 
 <div id="imageModal" class="modal" onclick="closeModal()">
     <span class="close">&times;</span>
     <img class="modal-content" id="modalImage">
 </div>
-
-<!-- Canvas nascosti per PDF -->
-<canvas id="pdfBarChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="500"></canvas>
-<canvas id="pdfLineChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="450"></canvas>
-<canvas id="pdfMultiLineChart" style="position:absolute;left:-9999px;top:-9999px;" width="1000" height="500"></canvas>
 
 </div>
 
@@ -553,44 +531,15 @@ let currentData = [];
 let filteredData = [];
 let currentPage = 1;
 const rowsPerPage = 10;
-const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
+const colors=['#2463EB','#EF4444','#10B981','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#F97316','#06B6D4','#84CC16'];
 
 const uploadArea = document.getElementById('uploadArea');
 const fileInput = document.getElementById('fileInput');
 const fileInfo = document.getElementById('fileInfo');
 const errorMsg = document.getElementById('errorMsg');
 
-// Inizializza i date pickers con feedback visivo
 const dateStartFilter = document.getElementById('dateStartFilter');
 const dateEndFilter = document.getElementById('dateEndFilter');
-
-// Aggiungi effetto visivo quando si apre il calendario
-dateStartFilter.addEventListener('click', function() {
-    this.showPicker && this.showPicker();
-});
-
-dateEndFilter.addEventListener('click', function() {
-    this.showPicker && this.showPicker();
-});
-
-// Feedback visivo quando viene selezionata una data
-dateStartFilter.addEventListener('change', function() {
-    if(this.value) {
-        this.style.borderColor = '#2962FF';
-        setTimeout(() => {
-            this.style.borderColor = '';
-        }, 1000);
-    }
-});
-
-dateEndFilter.addEventListener('change', function() {
-    if(this.value) {
-        this.style.borderColor = '#2962FF';
-        setTimeout(() => {
-            this.style.borderColor = '';
-        }, 1000);
-    }
-});
 
 uploadArea.onclick = () => fileInput.click();
 
@@ -615,13 +564,11 @@ fileInput.addEventListener('change', (e) => {
     if(file) handleFile(file);
 });
 
-// Funzione per ottenere il percorso dell'immagine locale
-// Le immagini sono nella cartella "images" e il nome viene letto dalla colonna Screenshot del CSV
 function getLocalImagePath(screenshotName) {
     if (screenshotName && screenshotName.trim() !== '') {
         return `images/${screenshotName.trim()}`;
     }
-    return ''; // Ritorna stringa vuota se non c'è screenshot
+    return '';
 }
 
 function showImage(imagePath) {
@@ -644,23 +591,21 @@ document.addEventListener('keydown', function(event) {
 function handleFile(file){
     errorMsg.textContent = '';
     fileInfo.textContent = '';
-    fileInfo.textContent = `📁 Loading ${file.name}...`;
+    fileInfo.textContent = `📁 Caricamento ${file.name}...`;
     
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
             const text = e.target.result;
-            console.log('File loaded, size:', text.length);
             
             const firstLine = text.split('\n')[0];
             const tabCount = (firstLine.match(/\t/g) || []).length;
             const commaCount = (firstLine.match(/,/g) || []).length;
             const delimiter = tabCount > commaCount ? '\t' : ',';
-            console.log('Delimiter:', delimiter === '\t' ? 'TAB' : 'COMMA');
             
             const lines = text.split('\n').filter(l => l.trim());
             if(lines.length < 2) {
-                errorMsg.textContent = '⚠️ File is empty or has no data rows';
+                errorMsg.textContent = '⚠️ Il file è vuoto o non contiene dati';
                 return;
             }
             
@@ -692,7 +637,6 @@ function handleFile(file){
             }
             
             const headers = parseCSVLine(lines[0], delimiter);
-            console.log('Headers found:', headers);
             
             let siteIdx = -1, dateIdx = -1, sectorIdx = -1, goalIdx = -1, screenshotIdx = -1;
             headers.forEach((h, i) => {
@@ -704,12 +648,9 @@ function handleFile(file){
                 if(lower.includes('screenshot') || lower.includes('image') || lower.includes('foto')) screenshotIdx = i;
             });
             
-            console.log('Indices - Site:', siteIdx, 'Date:', dateIdx, 'Sector:', sectorIdx, 'Goal:', goalIdx, 'Screenshot:', screenshotIdx);
-            console.log('Headers:', headers);
-            
             if(siteIdx === -1 || sectorIdx === -1 || goalIdx === -1) {
-                errorMsg.innerHTML = `⚠️ Required columns not found!<br><br>
-                    <strong>Columns found:</strong><br>
+                errorMsg.innerHTML = `⚠️ Colonne richieste non trovate!<br><br>
+                    <strong>Colonne trovate:</strong><br>
                     ${headers.map((h, i) => `${i}: "${h}"`).join('<br>')}`;
                 return;
             }
@@ -718,14 +659,14 @@ function handleFile(file){
             for(let i = 1; i < lines.length; i++) {
                 const values = parseCSVLine(lines[i], delimiter);
                 
-                let sector = values[sectorIdx] || 'UNKNOWN';
-                let goal = values[goalIdx] || 'UNKNOWN';
+                let sector = values[sectorIdx] || 'SCONOSCIUTO';
+                let goal = values[goalIdx] || 'SCONOSCIUTO';
                 
                 if(sector.startsWith('http') || sector.includes('://') || sector.includes('drive.google')) {
-                    sector = 'UNKNOWN';
+                    sector = 'SCONOSCIUTO';
                 }
                 if(goal.startsWith('http') || goal.includes('://') || goal.includes('drive.google')) {
-                    goal = 'UNKNOWN';
+                    goal = 'SCONOSCIUTO';
                 }
                 
                 if(values[siteIdx] && values[siteIdx].length > 0) {
@@ -738,26 +679,14 @@ function handleFile(file){
                         rowIndex: i
                     };
                     
-                    // Debug: stampa i primi 5 record per verificare
-                    if(i <= 5) {
-                        console.log(`Row ${i}:`, {
-                            site: rowData.site.substring(0, 50),
-                            sector: rowData.sector,
-                            goal: rowData.goal,
-                            screenshot: rowData.screenshot
-                        });
-                    }
-                    
                     data.push(rowData);
                 }
             }
             
-            console.log('Parsed', data.length, 'records');
-            
             currentData = data;
             filteredData = data;
             
-            fileInfo.textContent = `✓ Successfully loaded ${data.length} records`;
+            fileInfo.textContent = `✓ Caricati con successo ${data.length} record`;
             
             document.getElementById('tableContainer').classList.add('active');
             
@@ -770,13 +699,13 @@ function handleFile(file){
             }, 300);
             
         } catch(error) {
-            errorMsg.textContent = '⚠️ Error: ' + error.message;
-            console.error('Parse error:', error);
+            errorMsg.textContent = '⚠️ Errore: ' + error.message;
+            console.error('Errore parsing:', error);
         }
     };
     
     reader.onerror = () => {
-        errorMsg.textContent = '⚠️ Error reading file';
+        errorMsg.textContent = '⚠️ Errore nella lettura del file';
     };
     
     reader.readAsText(file);
@@ -816,7 +745,7 @@ function applyFilters() {
 function populateFilters(data) {
     const sectors = [...new Set(data.map(r => r.sector))].sort();
     const sectorSelect = document.getElementById('sectorFilter');
-    sectorSelect.innerHTML = '<option value="">All Sectors</option>';
+    sectorSelect.innerHTML = '<option value="">Tutti i Settori</option>';
     sectors.forEach(s => {
         const option = document.createElement('option');
         option.value = s;
@@ -826,7 +755,7 @@ function populateFilters(data) {
     
     const goals = [...new Set(data.map(r => r.goal))].sort();
     const goalSelect = document.getElementById('goalFilter');
-    goalSelect.innerHTML = '<option value="">All Goals</option>';
+    goalSelect.innerHTML = '<option value="">Tutti gli Obiettivi</option>';
     goals.forEach(g => {
         const option = document.createElement('option');
         option.value = g;
@@ -858,7 +787,7 @@ function displayPage(data, page){
     const pageData = data.slice(start, start + rowsPerPage);
 
     if(pageData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#8b95a5;">Nessun dato trovato</td></tr>';
         return;
     }
 
@@ -866,7 +795,6 @@ function displayPage(data, page){
         const siteDisplay = r.site.length > 50 ? r.site.substring(0, 47) + '...' : r.site;
         const dateDisplay = r.date ? r.date.substring(0, 10) : '-';
         
-        // Usa il nome dell'immagine dalla colonna Screenshot
         const imagePath = getLocalImagePath(r.screenshot);
         const screenshotCell = imagePath ? `<img src="${imagePath}" alt="Screenshot" class="screenshot-thumbnail" onclick="event.stopPropagation(); showImage('${imagePath}')" onerror="this.style.display='none'">` : '-';
         
@@ -881,7 +809,7 @@ function displayPage(data, page){
     });
 
     const total = Math.ceil(data.length / rowsPerPage) || 1;
-    document.getElementById('pageInfo').textContent = `Page ${page} of ${total} (${data.length} records)`;
+    document.getElementById('pageInfo').textContent = `Pagina ${page} di ${total} (${data.length} record)`;
     document.getElementById('prevBtn').disabled = page === 1;
     document.getElementById('nextBtn').disabled = page === total;
 }
@@ -972,8 +900,8 @@ function updateAllSectorsChart(data){
             datasets: [{
                 data: sorted.map(([_,v]) => v),
                 backgroundColor: dynamicColors,
-                borderWidth: 3,
-                borderColor: '#1a1d35'
+                borderWidth: 2,
+                borderColor: '#fff'
             }]
         },
         options: {
@@ -981,12 +909,12 @@ function updateAllSectorsChart(data){
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: 'bottom',
+                    position: 'right',
                     labels: {
-                        color: '#a8b2c1', 
-                        font: {size: 10}, 
-                        padding: 8,
-                        boxWidth: 12
+                        color: '#333', 
+                        font: {size: 11}, 
+                        padding: 10,
+                        boxWidth: 15
                     }
                 },
                 tooltip: {
@@ -1013,40 +941,35 @@ function updateTop5SectorsBarChart(data){
     });
     const sorted = Object.entries(sectors).sort((a,b) => b[1] - a[1]).slice(0, 5);
     
-    const brightColors = ['#2962FF', '#F44336', '#4CAF50', '#FF9800', '#9C27B0'];
+    const brightColors = ['#2463EB', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6'];
     
     top5SectorsBarChart = new Chart(document.getElementById('top5SectorsBarChart'), {
         type: 'bar',
         data: {
             labels: sorted.map(([k]) => k),
             datasets: [{
-                label: 'Campagne',
+                label: 'Numero Campagne',
                 data: sorted.map(([_,v]) => v),
                 backgroundColor: brightColors,
-                borderWidth: 0,
-                borderRadius: 6
+                borderWidth: 0
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            indexAxis: 'y',
             plugins: {
-                legend: {display: false},
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    titleColor: '#FFFFFF',
-                    bodyColor: '#FFFFFF'
-                }
+                legend: {display: false}
             },
             scales: {
-                y: {
-                    beginAtZero: true, 
-                    ticks: {color: '#a8b2c1', font: {size: 12}}, 
-                    grid: {color: 'rgba(168,178,193,0.1)'}
-                },
                 x: {
+                    beginAtZero: true, 
+                    ticks: {color: '#666', font: {size: 11}}, 
+                    grid: {color: 'rgba(0,0,0,0.1)'}
+                },
+                y: {
                     grid: {display: false}, 
-                    ticks: {color: '#a8b2c1', font: {size: 11}}
+                    ticks: {color: '#333', font: {size: 11}}
                 }
             }
         }
@@ -1070,8 +993,8 @@ function updateGoalsPieChart(data){
             datasets: [{
                 data: sorted.map(([_,v]) => v),
                 backgroundColor: dynamicColors,
-                borderWidth: 3,
-                borderColor: '#1a1d35'
+                borderWidth: 2,
+                borderColor: '#fff'
             }]
         },
         options: {
@@ -1081,21 +1004,10 @@ function updateGoalsPieChart(data){
                 legend: {
                     position: 'bottom',
                     labels: {
-                        color: '#a8b2c1', 
+                        color: '#333', 
                         font: {size: 10}, 
-                        padding: 8,
-                        boxWidth: 12
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.parsed || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return `${label}: ${value} (${percentage}%)`;
-                        }
+                        padding: 12,
+                        boxWidth: 15
                     }
                 }
             }
@@ -1115,63 +1027,41 @@ function updateMonthChart(data){
     const sorted = Object.keys(months).sort();
     const counts = sorted.map(m => months[m]);
 
-    const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-    const labels = sorted.map(m => {
-        const [year, month] = m.split('-');
-        return `${monthNames[parseInt(month) - 1]} ${year}`;
-    });
-
     monthChart = new Chart(document.getElementById('monthChart'), {
         type: 'line',
         data: {
-            labels: labels,
+            labels: sorted,
             datasets: [{
-                label: 'Campagne',
+                label: 'Numero Campagne',
                 data: counts,
-                borderColor: colors[0],       // usa il primo colore definito nell'HTML
-                backgroundColor: 'rgba(41, 98, 255, 0.15)', // area sotto linea leggermente trasparente
+                borderColor: '#2463EB',
+                backgroundColor: 'rgba(36, 99, 235, 0.1)',
                 fill: true,
                 tension: 0.4,
-                borderWidth: 3,
-                pointRadius: 6,
-                pointBackgroundColor: colors[0],
-                pointBorderColor: '#1a1d35',
-                pointHoverRadius: 8,
-                pointHoverBackgroundColor: colors[0],
-                pointHoverBorderColor: '#fff'
+                borderWidth: 2,
+                pointRadius: 4,
+                pointBackgroundColor: '#2463EB'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    cornerRadius: 6,
-                    padding: 10,
-                    mode: 'index',
-                    intersect: false
-                }
+                legend: {display: false}
             },
             scales: {
                 x: {
-                    ticks: { color: '#a8b2c1', font: { size: 11 } },
+                    ticks: { color: '#666', font: { size: 10 } },
                     grid: { display: false }
                 },
                 y: {
-                    ticks: { color: '#a8b2c1', font: { size: 11 } },
-                    grid: { color: 'rgba(168,178,193,0.1)' }
+                    ticks: { color: '#666', font: { size: 10 } },
+                    grid: { color: 'rgba(0,0,0,0.1)' }
                 }
             }
         }
     });
 }
-
 
 function updateGoalsByMonthChart(data){
     if(goalsByMonthChart) goalsByMonthChart.destroy();
@@ -1195,17 +1085,13 @@ function updateGoalsByMonthChart(data){
     const datasets = sortedGoals.map((goal, idx) => ({
         label: goal,
         data: sortedMonths.map(month => monthGoalMap[month][goal] || 0),
-        borderColor: colors[idx % colors.length],  // usa i colori dell'HTML
+        borderColor: colors[idx % colors.length],
         backgroundColor: 'transparent',
-        borderWidth: 3,
+        borderWidth: 2,
         fill: false,
         tension: 0.4,
-        pointRadius: 5,
-        pointBackgroundColor: colors[idx % colors.length],
-        pointBorderColor: '#1a1d35',
-        pointHoverRadius: 7,
-        pointHoverBackgroundColor: colors[idx % colors.length],
-        pointHoverBorderColor: '#fff'
+        pointRadius: 3,
+        pointBackgroundColor: colors[idx % colors.length]
     }));
 
     goalsByMonthChart = new Chart(document.getElementById('goalsByMonthChart'), {
@@ -1220,247 +1106,424 @@ function updateGoalsByMonthChart(data){
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: { color: '#a8b2c1', font: { size: 10 }, padding: 8, boxWidth: 12 }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    cornerRadius: 6,
-                    padding: 10,
-                    mode: 'index',
-                    intersect: false
+                    labels: { color: '#333', font: { size: 9 }, padding: 8, boxWidth: 12 }
                 }
             },
             scales: {
                 x: {
-                    ticks: { color: '#a8b2c1', font: { size: 11 } },
+                    ticks: { color: '#666', font: { size: 10 } },
                     grid: { display: false }
                 },
                 y: {
-                    ticks: { color: '#a8b2c1', font: { size: 11 } },
-                    grid: { color: 'rgba(168,178,193,0.1)' }
+                    ticks: { color: '#666', font: { size: 10 } },
+                    grid: { color: 'rgba(0,0,0,0.1)' }
                 }
             }
         }
     });
 }
 
-
-// PDF GENERATION
+// ============= GENERAZIONE PDF IDENTICA ALLE IMMAGINI =============
 document.getElementById('generatePdfBtn').addEventListener('click', async function() {
-    if(!currentData || currentData.length === 0){
+    if(!filteredData || filteredData.length === 0){
         alert('⚠️ Nessun dato da esportare!');
         return;
     }
 
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'pt', 'a4'); // portrait, points, A4
+    const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const margin = 40;
-
-    // ==================== PAGINA 1: COPERTINA ====================
-    pdf.setFillColor(255, 255, 255);
-    pdf.rect(0, 0, pageWidth, pdf.internal.pageSize.getHeight(), 'F');
-
-    pdf.setFont('Helvetica', 'bold');
-    pdf.setFontSize(28);
-    pdf.text('PHISHING DASHBOARD REPORT', pageWidth / 2, 120, { align: 'center' });
-
-    pdf.setFontSize(16);
-    pdf.setFont('Helvetica', 'normal');
-    pdf.text('Campagne di Phishing – Analisi del Periodo', pageWidth / 2, 160, { align: 'center' });
-
-    const minDate = currentData.map(r => r.date).filter(Boolean).sort()[0] || 'N/A';
-    const maxDate = currentData.map(r => r.date).filter(Boolean).sort().reverse()[0] || 'N/A';
-    const today = new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' });
-
-    pdf.setFontSize(12);
-    pdf.text(`Periodo analizzato: dal ${minDate} al ${maxDate}`, pageWidth / 2, 190, { align: 'center' });
-    pdf.text(`Report generato il: ${today}`, pageWidth / 2, 210, { align: 'center' });
-
-    pdf.addPage();
-
-    // ==================== PAGINA 2: SINTESI ====================
-    pdf.setFontSize(16);
-    pdf.setFont('Helvetica', 'bold');
-    pdf.text('SINTESI ESECUTIVA', margin, 50);
-
-    pdf.setFont('Helvetica', 'normal');
-    pdf.setFontSize(12);
-    pdf.text(`Nel periodo analizzato sono state identificate ${currentData.length} campagne di phishing.`, margin, 75);
-
-    const uniqueDomains = new Set(currentData.map(r => r.site)).size;
-    const uniqueSectors = new Set(currentData.map(r => r.sector)).size;
-    const uniqueGoals = new Set(currentData.map(r => r.goal)).size;
-
-    const metrics = [
-        {label: 'Campagne rilevate', value: currentData.length},
-        {label: 'Domini malevoli', value: uniqueDomains},
-        {label: 'Settori colpiti', value: uniqueSectors},
-        {label: 'Tipologie attacco', value: uniqueGoals}
-    ];
-
-    let yPos = 100;
-    metrics.forEach(m => {
-        pdf.setFillColor(41, 98, 255);
-        pdf.setTextColor(255, 255, 255);
-        pdf.rect(margin, yPos, 120, 30, 'F');
-        pdf.setFontSize(10);
-        pdf.text(m.label, margin + 60, yPos + 12, { align: 'center' });
-        pdf.setFontSize(14);
-        pdf.text(`${m.value}`, margin + 60, yPos + 25, { align: 'center' });
-        yPos += 50;
-    });
-
-    pdf.addPage();
-
-    // ==================== PAGINA 3: TOP 5 SETTORI ====================
-    pdf.setFontSize(16);
-    pdf.setTextColor(0,0,0);
-    pdf.text('I 5 SETTORI PIÙ COLPITI', margin, 50);
-
-    // crea il grafico barre come immagine
-    const top5Sectors = {};
-    currentData.forEach(r => { top5Sectors[r.sector] = (top5Sectors[r.sector] || 0) + 1 });
-    const sortedSectors = Object.entries(top5Sectors).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
     
-    const canvasBar = document.createElement('canvas');
-    canvasBar.width = 1000;
-    canvasBar.height = 400;
-    new Chart(canvasBar, {
+    // Calcola date per il report
+    const dates = filteredData.map(r => r.date).filter(Boolean).sort();
+    const minDate = dates[0] || '';
+    const maxDate = dates[dates.length - 1] || '';
+    const today = new Date();
+    const reportDate = `${today.getDate()} ${['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'][today.getMonth()]} ${today.getFullYear()}`;
+    
+    // Calcola statistiche
+    const uniqueDomains = new Set(filteredData.map(r => r.site)).size;
+    const uniqueSectors = new Set(filteredData.map(r => r.sector)).size;
+    const uniqueGoals = new Set(filteredData.map(r => r.goal)).size;
+
+    // ==================== PAGINA 1: TITOLO ====================
+    // Banda blu in alto
+    pdf.setFillColor(41, 98, 255);
+    pdf.rect(0, 0, pageWidth, 15, 'F');
+    
+    // Titolo principale
+    pdf.setTextColor(41, 98, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(24);
+    pdf.text('ANALISI CAMPAGNE PHISHING', pageWidth / 2, 50, { align: 'center' });
+    
+    // Sottotitolo
+    pdf.setFontSize(12);
+    pdf.setTextColor(128, 128, 128);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Campagne di Phishing - Analisi del Periodo', pageWidth / 2, 60, { align: 'center' });
+    
+    // Date report
+    pdf.setFontSize(10);
+    pdf.text(`Periodo analizzato: dal ${minDate} al ${maxDate}`, pageWidth / 2, 70, { align: 'center' });
+    pdf.text(`Report generato il: ${reportDate}`, pageWidth / 2, 76, { align: 'center' });
+    
+    // Box metriche - SINTESI ESECUTIVA
+    pdf.setFontSize(12);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('SINTESI ESECUTIVA', margin, 95);
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+    pdf.text(`Nel periodo analizzato sono state identificate ${filteredData.length} campagne di phishing`, margin, 105);
+    pdf.text(`distribuite su ${uniqueDomains} domini malevoli unici. Gli attacchi hanno colpito ${uniqueSectors} settori`, margin, 111);
+    pdf.text(`diversi attraverso ${uniqueGoals} tipologie di attacco differenti.`, margin, 117);
+    
+    // Box colorati con metriche
+    const metrics = [
+        {label: 'Campagne rilevate', value: filteredData.length, color: [231, 76, 60], x: margin},
+        {label: 'Domini malevoli', value: uniqueDomains, color: [41, 98, 255], x: pageWidth/2 + 5},
+    ];
+    
+    let yBox = 130;
+    metrics.forEach(m => {
+        // Box con bordo colorato
+        pdf.setDrawColor(m.color[0], m.color[1], m.color[2]);
+        pdf.setLineWidth(1);
+        pdf.rect(m.x, yBox, (pageWidth/2) - margin - 5, 20);
+        
+        // Label
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(m.label, m.x + 3, yBox + 6);
+        
+        // Valore grande
+        pdf.setFontSize(18);
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(String(m.value), m.x + 3, yBox + 16);
+    });
+    
+    yBox += 25;
+    const metrics2 = [
+        {label: 'Settori colpiti', value: uniqueSectors, color: [46, 204, 113], x: margin},
+        {label: 'Tipologie attacco', value: uniqueGoals, color: [155, 89, 182], x: pageWidth/2 + 5},
+    ];
+    
+    metrics2.forEach(m => {
+        pdf.setDrawColor(m.color[0], m.color[1], m.color[2]);
+        pdf.setLineWidth(1);
+        pdf.rect(m.x, yBox, (pageWidth/2) - margin - 5, 20);
+        
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(m.label, m.x + 3, yBox + 6);
+        
+        pdf.setFontSize(18);
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(String(m.value), m.x + 3, yBox + 16);
+    });
+    
+    // Banda blu in basso
+    pdf.setFillColor(41, 98, 255);
+    pdf.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+    
+    // ==================== PAGINA 2: I SETTORI PIÙ COLPITI ====================
+    pdf.addPage();
+    
+    // Banda blu in alto
+    pdf.setFillColor(41, 98, 255);
+    pdf.rect(0, 0, pageWidth, 15, 'F');
+    
+    // Titolo
+    pdf.setTextColor(41, 98, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text('I settori più colpiti', margin, 30);
+    
+    // Testo descrittivo
+    pdf.setFontSize(10);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    const descText = `Il grafico seguente evidenzia i 5 settori maggiormente bersagliati dagli attacchi phishing, con "BANKING/FINANCE" in testa con ${Object.entries(filteredData.reduce((acc, r) => {acc[r.sector] = (acc[r.sector] || 0) + 1; return acc;}, {})).sort((a,b) => b[1]-a[1])[0]?.[1] || 0} campagne, permettendo di identificare le aree industriali che richiedono maggiore attenzione e protezione.`;
+    const lines = pdf.splitTextToSize(descText, pageWidth - 2 * margin);
+    pdf.text(lines, margin, 40);
+    
+    // Crea grafico a barre orizzontale
+    const sectors = {};
+    filteredData.forEach(r => { sectors[r.sector] = (sectors[r.sector] || 0) + 1 });
+    const top5 = Object.entries(sectors).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    
+    const barCanvas = document.createElement('canvas');
+    barCanvas.width = 800;
+    barCanvas.height = 400;
+    const barChart = new Chart(barCanvas, {
         type: 'bar',
         data: {
-            labels: sortedSectors.map(([k]) => k),
+            labels: top5.map(([k]) => k),
             datasets: [{
-                label: 'Campagne',
-                data: sortedSectors.map(([_,v])=>v),
-                backgroundColor: ['#2962FF','#F44336','#4CAF50','#FF9800','#9C27B0']
+                data: top5.map(([_,v])=>v),
+                backgroundColor: ['#2463EB','#EF4444','#10B981','#F59E0B','#8B5CF6'],
+                borderWidth: 0
             }]
         },
-        options: { responsive: false, plugins:{legend:{display:false}} }
-    });
-    const barImg = canvasBar.toDataURL('image/png');
-    pdf.addImage(barImg, 'PNG', margin, 70, pageWidth - 2*margin, 250);
-
-    pdf.text(`Il grafico evidenzia i settori maggiormente bersagliati, permettendo di identificare le aree più vulnerabili.`, margin, 340, { maxWidth: pageWidth - 2*margin });
-
-    pdf.addPage();
-
-    // ==================== PAGINA 4: DISTRIBUZIONE TEMPORALE ====================
-    pdf.setFontSize(16);
-    pdf.text('ANALISI TEMPORALE DELLE CAMPAGNE', margin, 50);
-
-    // grafico line
-    const monthCounts = {};
-    currentData.forEach(r => {
-        if(r.date && r.date.length >= 7){
-            const m = r.date.slice(0,7);
-            monthCounts[m] = (monthCounts[m] || 0)+1;
+        options: {
+            responsive: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: {display: false},
+                title: {display: false}
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {font: {size: 14}},
+                    grid: {color: 'rgba(0,0,0,0.1)'}
+                },
+                y: {
+                    ticks: {font: {size: 14}},
+                    grid: {display: false}
+                }
+            }
         }
     });
-    const sortedMonths = Object.keys(monthCounts).sort();
-    const counts = sortedMonths.map(m=>monthCounts[m]);
-    const monthCanvas = document.createElement('canvas');
-    monthCanvas.width = 1000;
-    monthCanvas.height = 400;
-    new Chart(monthCanvas,{
+    
+    const barImg = barCanvas.toDataURL('image/png');
+    pdf.addImage(barImg, 'PNG', margin, 60, pageWidth - 2*margin, 80);
+    
+    // Banda blu in basso
+    pdf.setFillColor(41, 98, 255);
+    pdf.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+    
+    // Numero pagina
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(9);
+    pdf.text('Pagina 2 di 3', pageWidth / 2, pageHeight - 8, { align: 'center' });
+    
+    // ==================== PAGINA 3: ANALISI TEMPORALE E OBIETTIVI ====================
+    pdf.addPage();
+    
+    // Banda blu in alto
+    pdf.setFillColor(41, 98, 255);
+    pdf.rect(0, 0, pageWidth, 15, 'F');
+    
+    // Titolo analisi temporale
+    pdf.setTextColor(41, 98, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text('Analisi temporale', margin, 30);
+    
+    // Testo descrittivo
+    pdf.setFontSize(10);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Il grafico seguente mostra la distribuzione temporale delle campagne di phishing rilevate,', margin, 38);
+    pdf.text('evidenziando i picchi di attività e permettendo di identificare pattern temporali significativi.', margin, 44);
+    
+    // Grafico temporale
+    const months = {};
+    filteredData.forEach(r => {
+        if(r.date && r.date.length >= 7){
+            const m = r.date.slice(0,7);
+            months[m] = (months[m] || 0)+1;
+        }
+    });
+    const sortedMonths = Object.keys(months).sort();
+    const counts = sortedMonths.map(m=>months[m]);
+    
+    const lineCanvas = document.createElement('canvas');
+    lineCanvas.width = 800;
+    lineCanvas.height = 300;
+    const lineChart = new Chart(lineCanvas,{
         type:'line',
         data:{
             labels: sortedMonths,
             datasets:[{
-                label:'Campagne',
                 data: counts,
-                borderColor:'#2962FF',
-                backgroundColor:'rgba(41,98,255,0.15)',
+                borderColor:'#2463EB',
+                backgroundColor:'rgba(36,99,235,0.1)',
                 fill:true,
-                tension:0.4
+                tension:0.4,
+                borderWidth: 3,
+                pointRadius: 5,
+                pointBackgroundColor: '#2463EB'
             }]
         },
-        options:{responsive:false, plugins:{legend:{display:false}}}
+        options:{
+            responsive:false,
+            plugins:{legend:{display:false}},
+            scales: {
+                x: {ticks: {font: {size: 12}}, grid: {display: false}},
+                y: {ticks: {font: {size: 12}}, grid: {color: 'rgba(0,0,0,0.1)'}}
+            }
+        }
     });
-    const monthImg = monthCanvas.toDataURL('image/png');
-    pdf.addImage(monthImg, 'PNG', margin, 70, pageWidth - 2*margin, 250);
-
-    pdf.text(`Il grafico mostra l’evoluzione delle campagne mese per mese, evidenziando i picchi di attività phishing.`, margin, 340, { maxWidth: pageWidth - 2*margin });
-
-    pdf.addPage();
-
-    // ==================== PAGINA 5: OBIETTIVI ATTACCO ====================
-    pdf.setFontSize(16);
-    pdf.text('DISTRIBUZIONE OBIETTIVI DI ATTACCO', margin, 50);
-
-    const goalsCount = {};
-    currentData.forEach(r => { goalsCount[r.goal] = (goalsCount[r.goal] || 0) +1 });
-    const sortedGoals = Object.entries(goalsCount).sort((a,b)=>b[1]-a[1]);
-
-    const goalsCanvas = document.createElement('canvas');
-    goalsCanvas.width = 1000;
-    goalsCanvas.height = 400;
-    new Chart(goalsCanvas,{
-        type:'doughnut',
-        data:{
-            labels: sortedGoals.map(([k])=>k),
-            datasets:[{
-                data: sortedGoals.map(([_,v])=>v),
-                backgroundColor: colors
-            }]
-        },
-        options:{responsive:false, plugins:{legend:{position:'bottom'}}}
-    });
-    const goalsImg = goalsCanvas.toDataURL('image/png');
-    pdf.addImage(goalsImg,'PNG',margin,70,pageWidth-2*margin,250);
-
-    pdf.text(`Questo grafico evidenzia le tipologie di attacco più utilizzate dai phisher, utile per capire le strategie predominanti.`, margin,340,{ maxWidth: pageWidth - 2*margin });
-
-    // ==================== PAGINA 6: CAMPAGNE PER OBIETTIVO NEL TEMPO ====================
-    pdf.addPage();
-    pdf.setFontSize(16);
-    pdf.text('CAMPAGNE PER OBIETTIVO NEL TEMPO', margin, 50);
-
+    
+    const lineImg = lineCanvas.toDataURL('image/png');
+    pdf.addImage(lineImg, 'PNG', margin, 50, pageWidth - 2*margin, 60);
+    
+    // Evoluzione per settore
+    pdf.setTextColor(41, 98, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text('Evoluzione per settore', margin, 125);
+    
+    pdf.setFontSize(10);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Il grafico multi-linea mostra come si è evoluta la distribuzione degli attacchi tra i diversi settori', margin, 133);
+    pdf.text('nel periodo analizzato, permettendo di identificare quali settori sono stati maggiormente sotto pressione.', margin, 139);
+    
+    // Grafico multi-linea
     const monthGoalMap = {};
     const allGoalsSet = new Set();
-    currentData.forEach(r => {
-        if(r.date && r.date.length >=7 && r.goal){
+    filteredData.forEach(r => {
+        if(r.date && r.date.length >=7 && r.sector){
             const month = r.date.slice(0,7);
-            allGoalsSet.add(r.goal);
+            allGoalsSet.add(r.sector);
             if(!monthGoalMap[month]) monthGoalMap[month]={};
-            monthGoalMap[month][r.goal]=(monthGoalMap[month][r.goal]||0)+1;
+            monthGoalMap[month][r.sector]=(monthGoalMap[month][r.sector]||0)+1;
         }
     });
     const sortedMonths2 = Object.keys(monthGoalMap).sort();
-    const allGoalsArr = Array.from(allGoalsSet);
+    const sectorCounts = {};
+    filteredData.forEach(r => {
+        if(r.sector) sectorCounts[r.sector] = (sectorCounts[r.sector] || 0) + 1;
+    });
+    const topSectors = Object.entries(sectorCounts).sort((a,b) => b[1]-a[1]).slice(0,5).map(([s]) => s);
+    
     const multiLineCanvas = document.createElement('canvas');
-    multiLineCanvas.width=1000;
+    multiLineCanvas.width=800;
     multiLineCanvas.height=400;
-
+    
     new Chart(multiLineCanvas,{
         type:'line',
         data:{
             labels: sortedMonths2,
-            datasets: allGoalsArr.map((goal, idx)=>({
-                label:goal,
-                data: sortedMonths2.map(m=>monthGoalMap[m][goal]||0),
+            datasets: topSectors.map((sector, idx)=>({
+                label:sector,
+                data: sortedMonths2.map(m=>monthGoalMap[m][sector]||0),
                 borderColor: colors[idx % colors.length],
                 backgroundColor:'transparent',
                 fill:false,
-                tension:0.4
+                tension:0.4,
+                borderWidth: 2,
+                pointRadius: 4
             }))
         },
-        options:{responsive:false, plugins:{legend:{position:'bottom'}}}
+        options:{
+            responsive:false,
+            plugins:{
+                legend:{
+                    position:'bottom',
+                    labels: {font: {size: 9}, padding: 6, boxWidth: 12}
+                }
+            },
+            scales: {
+                x: {ticks: {font: {size: 10}}, grid: {display: false}},
+                y: {ticks: {font: {size: 10}}, grid: {color: 'rgba(0,0,0,0.1)'}}
+            }
+        }
     });
     const multiLineImg = multiLineCanvas.toDataURL('image/png');
-    pdf.addImage(multiLineImg,'PNG',margin,70,pageWidth-2*margin,250);
-
-    pdf.text(`Evidenzia come le campagne per settore e obiettivo siano variate nel tempo, utile per analisi temporale avanzata.`, margin,340,{ maxWidth: pageWidth - 2*margin });
-
-    // ==================== SALVATAGGIO PDF ====================
-    pdf.save(`Phishing_Report_${today.replace(/\//g,'-')}.pdf`);
+    pdf.addImage(multiLineImg,'PNG',margin,145,pageWidth-2*margin,70);
+    
+    // Banda blu in basso
+    pdf.setFillColor(41, 98, 255);
+    pdf.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+    
+    // Numero pagina
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(9);
+    pdf.text('Pagina 2 di 3', pageWidth / 2, pageHeight - 8, { align: 'center' });
+    
+    // ==================== PAGINA 4: OBIETTIVI DEGLI ATTACCHI ====================
+    pdf.addPage();
+    
+    // Banda blu in alto
+    pdf.setFillColor(41, 98, 255);
+    pdf.rect(0, 0, pageWidth, 15, 'F');
+    
+    // Titolo
+    pdf.setTextColor(41, 98, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(14);
+    pdf.text('Obiettivi degli attacchi', margin, 30);
+    
+    // Testo descrittivo
+    const goalsCount = {};
+    filteredData.forEach(r => { goalsCount[r.goal] = (goalsCount[r.goal] || 0) +1 });
+    const sortedGoals = Object.entries(goalsCount).sort((a,b)=>b[1]-a[1]);
+    const topGoal = sortedGoals[0];
+    const topGoalPerc = ((topGoal[1] / filteredData.length) * 100).toFixed(1);
+    
+    pdf.setFontSize(10);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`L'obiettivo principale delle campagne risulta essere "${topGoal[0]}" con ${topGoal[1]} campagne`, margin, 38);
+    pdf.text(`(${topGoalPerc}% del totale). Il grafico mostra la distribuzione completa delle finalità degli attacchi.`, margin, 44);
+    
+    // Grafico obiettivi
+    const goalsCanvas = document.createElement('canvas');
+    goalsCanvas.width = 700;
+    goalsCanvas.height = 500;
+    new Chart(goalsCanvas,{
+        type:'bar',
+        data:{
+            labels: sortedGoals.map(([k])=>k),
+            datasets:[{
+                data: sortedGoals.map(([_,v])=>v),
+                backgroundColor: colors,
+                borderWidth: 0
+            }]
+        },
+        options:{
+            responsive:false,
+            indexAxis: 'y',
+            plugins:{
+                legend:{display:false},
+                title: {display: false}
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {font: {size: 14}},
+                    grid: {color: 'rgba(0,0,0,0.1)'}
+                },
+                y: {
+                    ticks: {font: {size: 12}},
+                    grid: {display: false}
+                }
+            }
+        }
+    });
+    const goalsImg = goalsCanvas.toDataURL('image/png');
+    pdf.addImage(goalsImg,'PNG',margin,52,pageWidth-2*margin,100);
+    
+    // Banda blu in basso
+    pdf.setFillColor(41, 98, 255);
+    pdf.rect(0, pageHeight - 15, pageWidth, 15, 'F');
+    
+    // Numero pagina e footer
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(9);
+    pdf.text('Pagina 3 di 3', pageWidth / 2, pageHeight - 8, { align: 'center' });
+    
+    pdf.setTextColor(180, 180, 180);
+    pdf.setFontSize(8);
+    pdf.text(`Report generato automaticamente il ${reportDate}`, pageWidth / 2, pageHeight - 3, { align: 'center' });
+    
+    // Salva PDF
+    const fileName = `Analisi_Campagne_Phishing_${minDate}_${maxDate}.pdf`.replace(/\//g, '-');
+    pdf.save(fileName);
 });
 
-
-
-
 </script>
+
 </body>
 </html>
