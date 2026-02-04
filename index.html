@@ -1770,9 +1770,28 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
     } finally {
         document.getElementById('loadingOverlay').classList.remove('active');
     }
+    
+    
+});
+// ===== AUTO LOAD CSV =====
+document.addEventListener("DOMContentLoaded", () => {
+    const csvPath = "data/dati.csv";
+
+    fetch(csvPath)
+        .then(response => {
+            if (!response.ok) throw new Error("CSV non trovato");
+            return response.text();
+        })
+        .then(text => {
+            const file = new File([text], "dati.csv", { type: "text/csv" });
+            handleFile(file);
+        })
+        .catch(err => {
+            console.error(err);
+            errorMsg.textContent = "⚠️ Impossibile caricare data/dati.csv";
+        });
 });
 
 </script>
-
 </body>
 </html>
