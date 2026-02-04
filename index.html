@@ -13,7 +13,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-font-family: ‘Rajdhani’, sans-serif;
+font-family: 'Rajdhani', sans-serif;
 background: #1a1d35;
 color: #fff;
 line-height: 1.6;
@@ -47,64 +47,52 @@ margin-top: 10px;
 letter-spacing: 1px;
 }
 
-/* UPLOAD SECTION */
-.upload-section {
+/* LOADING STATUS */
+.loading-status {
 background: #22253a;
-padding: 30px;
+padding: 20px;
 border-radius: 12px;
 margin-bottom: 30px;
 box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-}
-
-.upload-section h2 {
-margin-bottom: 20px;
-color: #fff;
-letter-spacing: 2px;
-font-size: 1.3rem;
-}
-
-.upload-area {
-border: 3px dashed #2962FF;
-padding: 40px 20px;
 text-align: center;
-cursor: pointer;
-border-radius: 12px;
-transition: all 0.3s ease;
-background: rgba(41, 98, 255, 0.05);
 }
 
-.upload-area:hover {
-border-color: #4CAF50;
-background: rgba(76, 175, 80, 0.1);
+.loading-status.active {
+display: block;
 }
 
-.upload-area.dragover {
-border-color: #4CAF50;
-background: rgba(76, 175, 80, 0.15);
-transform: scale(1.02);
-}
-
-.upload-icon {
-font-size: 3rem;
-margin-bottom: 10px;
-}
-
-.file-input {
+.loading-status.hidden {
 display: none;
 }
 
-.file-info {
-margin-top: 15px;
-font-size: 0.95rem;
-color: #27ae60;
-font-weight: 500;
+.status-icon {
+display: inline-block;
+width: 20px;
+height: 20px;
+margin-right: 10px;
+vertical-align: middle;
 }
 
-.error-msg {
-margin-top: 15px;
-font-size: 0.95rem;
+.status-spinner {
+border: 3px solid #2c2f4d;
+border-top: 3px solid #2962FF;
+border-radius: 50%;
+width: 20px;
+height: 20px;
+animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+
+.status-success {
+color: #27ae60;
+}
+
+.status-error {
 color: #e74c3c;
-font-weight: 500;
 }
 
 /* TABLE CONTAINER */
@@ -134,7 +122,7 @@ border: 2px solid #3a3d5c;
 border-radius: 8px;
 color: #fff;
 font-size: 0.95rem;
-font-family: ‘Rajdhani’, sans-serif;
+font-family: 'Rajdhani', sans-serif;
 transition: all 0.3s ease;
 }
 
@@ -154,34 +142,34 @@ position: relative;
 width: 100%;
 }
 
-.date-input-wrapper input[type=“date”] {
+.date-input-wrapper input[type="date"] {
 width: 100%;
 cursor: pointer;
 }
 
-input[type=“date”]::-webkit-calendar-picker-indicator {
+input[type="date"]::-webkit-calendar-picker-indicator {
 cursor: pointer;
 opacity: 1;
 filter: invert(0.7);
 font-size: 1.2em;
 }
 
-input[type=“date”]::-webkit-calendar-picker-indicator:hover {
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
 filter: invert(0.9);
 }
 
-input[type=“date”]::-moz-calendar-picker-indicator {
+input[type="date"]::-moz-calendar-picker-indicator {
 cursor: pointer;
 opacity: 1;
 filter: invert(0.7);
 }
 
-input[type=“date”]:focus {
+input[type="date"]:focus {
 outline: 2px solid #2962FF;
 outline-offset: 2px;
 }
 
-.search-box[type=“date”] {
+.search-box[type="date"] {
 position: relative;
 padding-right: 40px;
 }
@@ -209,7 +197,7 @@ color: #fff;
 border: none;
 border-radius: 8px;
 font-size: 1rem;
-font-family: ‘Rajdhani’, sans-serif;
+font-family: 'Rajdhani', sans-serif;
 font-weight: 600;
 cursor: pointer;
 transition: all 0.3s ease;
@@ -296,7 +284,7 @@ border: 2px solid #3a3d5c;
 color: #fff;
 border-radius: 8px;
 cursor: pointer;
-font-family: ‘Rajdhani’, sans-serif;
+font-family: 'Rajdhani', sans-serif;
 font-weight: 600;
 transition: all 0.3s ease;
 }
@@ -432,11 +420,6 @@ animation: spin 1s linear infinite;
 margin: 0 auto 20px;
 }
 
-@keyframes spin {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(360deg); }
-}
-
 /* RESPONSIVE */
 @media (max-width: 768px) {
 .charts-grid-two-cols {
@@ -458,30 +441,24 @@ h1 {
 <body>
 <div class="container">
 <header>
-    <h1>SOCIAL ENGINEERING DASHBOARD</h1>
-    <div class="subtitle">Phishing Sites & Human Attack Surface</div>
+    <h1>PYNLAB</h1>
+    <div class="subtitle">Social Engineering Dashboard - Phishing Sites & Human Attack Surface</div>
 </header>
 
-<div class="upload-section">
-    <h2>UPLOAD CSV DATA</h2>
-    <div class="upload-area" id="uploadArea">
-        <div class="upload-icon">📊</div>
-        <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
-        <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
-        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
-    </div>
-    <div id="fileInfo" class="file-info"></div>
-    <div id="errorMsg" class="error-msg"></div>
+<div class="loading-status active" id="loadingStatus">
+    <div class="status-spinner"></div>
+    <span style="margin-left: 10px;">Caricamento dati in corso...</span>
 </div>
+<div id="errorMsg" class="error-msg"></div>
 
 <div class="table-container" id="tableContainer">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
         <div class="date-input-wrapper">
-            <input type="date" id="dateStartFilter" class="search-box" placeholder="Start Date" title="Clicca per selezionare la data di inizio">
+            <input type="date" id="dateStartFilter" class="search-box" placeholder="Start Date" title="Seleziona la data di inizio">
             <span class="date-tooltip">📅 Data inizio</span>
         </div>
         <div class="date-input-wrapper">
-            <input type="date" id="dateEndFilter" class="search-box" placeholder="End Date" title="Clicca per selezionare la data di fine">
+            <input type="date" id="dateEndFilter" class="search-box" placeholder="End Date" title="Seleziona la data di fine">
             <span class="date-tooltip">📅 Data fine</span>
         </div>
         <select id="sectorFilter" class="search-box" style="cursor:pointer;">
@@ -513,7 +490,7 @@ h1 {
     </thead>
     <tbody id="tableBody">
         <tr>
-            <td colspan="5" style="text-align:center;color:#8b95a5;">No data loaded</td>
+            <td colspan="5" style="text-align:center;color:#8b95a5;">Caricamento dati...</td>
         </tr>
     </tbody>
 </table>
@@ -576,11 +553,6 @@ let currentPage = 1;
 const rowsPerPage = 10;
 const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
 
-const uploadArea = document.getElementById('uploadArea');
-const fileInput = document.getElementById('fileInput');
-const fileInfo = document.getElementById('fileInfo');
-const errorMsg = document.getElementById('errorMsg');
-
 const dateStartFilter = document.getElementById('dateStartFilter');
 const dateEndFilter = document.getElementById('dateEndFilter');
 
@@ -599,6 +571,7 @@ dateStartFilter.addEventListener('change', function() {
             this.style.borderColor = '';
         }, 1000);
     }
+    applyFilters();
 });
 
 dateEndFilter.addEventListener('change', function() {
@@ -608,29 +581,7 @@ dateEndFilter.addEventListener('change', function() {
             this.style.borderColor = '';
         }, 1000);
     }
-});
-
-uploadArea.onclick = () => fileInput.click();
-
-uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.classList.add('dragover');
-});
-
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.classList.remove('dragover');
-});
-
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if(file) handleFile(file);
-});
-
-fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if(file) handleFile(file);
+    applyFilters();
 });
 
 function getLocalImagePath(screenshotName) {
@@ -686,142 +637,153 @@ function parseItalianDate(dateStr) {
 }
 
 function handleFile(file){
-    errorMsg.textContent = '';
-    fileInfo.textContent = '';
-    fileInfo.textContent = `📁 Loading ${file.name}...`;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const text = e.target.result;
-            console.log('File loaded, size:', text.length);
-            
-            const firstLine = text.split('\n')[0];
-            const tabCount = (firstLine.match(/\t/g) || []).length;
-            const commaCount = (firstLine.match(/,/g) || []).length;
-            const delimiter = tabCount > commaCount ? '\t' : ',';
-            console.log('Delimiter:', delimiter === '\t' ? 'TAB' : 'COMMA');
-            
-            const lines = text.split('\n').filter(l => l.trim());
-            if(lines.length < 2) {
-                errorMsg.textContent = '⚠️ File is empty or has no data rows';
-                return;
-            }
-            
-            function parseCSVLine(line, delim) {
-                const result = [];
-                let current = '';
-                let inQuotes = false;
+    try {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const text = e.target.result;
+                console.log('File loaded, size:', text.length);
                 
-                for(let i = 0; i < line.length; i++) {
-                    const char = line[i];
-                    const nextChar = line[i + 1];
+                const firstLine = text.split('\n')[0];
+                const tabCount = (firstLine.match(/\t/g) || []).length;
+                const commaCount = (firstLine.match(/,/g) || []).length;
+                const delimiter = tabCount > commaCount ? '\t' : ',';
+                console.log('Delimiter:', delimiter === '\t' ? 'TAB' : 'COMMA');
+                
+                const lines = text.split('\n').filter(l => l.trim());
+                if(lines.length < 2) {
+                    updateLoadingStatus('No data found in file', false);
+                    return;
+                }
+                
+                function parseCSVLine(line, delim) {
+                    const result = [];
+                    let current = '';
+                    let inQuotes = false;
                     
-                    if(char === '"') {
-                        if(inQuotes && nextChar === '"') {
-                            current += '"';
-                            i++;
-                        } else {
-                            inQuotes = !inQuotes;
+                    for(let i = 0; i < line.length; i++) {
+                        const char = line[i];
+                        const nextChar = line[i + 1];
+                        
+                        if(char === '"') {
+                            if(inQuotes && nextChar === '"') {
+                                current += '"';
+                                i++;
+                            } else {
+                                inQuotes = !inQuotes;
+                            }
+                        } else if(char === delim && !inQuotes) {
+                            result.push(current.trim());
+                            current = '';
+                        } else if(char !== '\r') {
+                            current += char;
                         }
-                    } else if(char === delim && !inQuotes) {
-                        result.push(current.trim());
-                        current = '';
-                    } else if(char !== '\r') {
-                        current += char;
                     }
-                }
-                result.push(current.trim());
-                return result;
-            }
-            
-            const headers = parseCSVLine(lines[0], delimiter);
-            console.log('Headers found:', headers);
-            
-            let siteIdx = -1, dateIdx = -1, sectorIdx = -1, goalIdx = -1, screenshotIdx = -1;
-            headers.forEach((h, i) => {
-                const lower = h.toLowerCase().trim();
-                if(lower.includes('site') || lower.includes('sito') || lower.includes('url')) siteIdx = i;
-                if(lower.includes('last') || lower.includes('date') || lower.includes('data') || lower.includes('seen')) dateIdx = i;
-                if(lower.includes('sector') && lower.includes('attack')) sectorIdx = i;
-                if(lower.includes('goal') || lower.includes('obiettivo')) goalIdx = i;
-                if(lower.includes('screenshot') || lower.includes('image') || lower.includes('foto')) screenshotIdx = i;
-            });
-            
-            console.log('Indices - Site:', siteIdx, 'Date:', dateIdx, 'Sector:', sectorIdx, 'Goal:', goalIdx, 'Screenshot:', screenshotIdx);
-            
-            if(siteIdx === -1 || sectorIdx === -1 || goalIdx === -1) {
-                errorMsg.innerHTML = `⚠️ Required columns not found!<br><br>
-                    <strong>Columns found:</strong><br>
-                    ${headers.map((h, i) => `${i}: "${h}"`).join('<br>')}`;
-                return;
-            }
-            
-            const data = [];
-            for(let i = 1; i < lines.length; i++) {
-                const values = parseCSVLine(lines[i], delimiter);
-                
-                let sector = values[sectorIdx] || 'UNKNOWN';
-                let goal = values[goalIdx] || 'UNKNOWN';
-                
-                if(sector.startsWith('http') || sector.includes('://') || sector.includes('drive.google')) {
-                    sector = 'UNKNOWN';
-                }
-                if(goal.startsWith('http') || goal.includes('://') || goal.includes('drive.google')) {
-                    goal = 'UNKNOWN';
+                    result.push(current.trim());
+                    return result;
                 }
                 
-                if(values[siteIdx] && values[siteIdx].length > 0) {
-                    const rowData = {
-                        site: values[siteIdx] || '',
-                        date: dateIdx !== -1 ? parseItalianDate(values[dateIdx]) : '',
-                        sector: sector.trim().toUpperCase(),
-                        goal: goal.trim().toUpperCase(),
-                        screenshot: screenshotIdx !== -1 ? values[screenshotIdx] : '',
-                        rowIndex: i
-                    };
+                const headers = parseCSVLine(lines[0], delimiter);
+                console.log('Headers found:', headers);
+                
+                let siteIdx = -1, dateIdx = -1, sectorIdx = -1, goalIdx = -1, screenshotIdx = -1;
+                headers.forEach((h, i) => {
+                    const lower = h.toLowerCase().trim();
+                    if(lower.includes('site') || lower.includes('sito') || lower.includes('url')) siteIdx = i;
+                    if(lower.includes('last') || lower.includes('date') || lower.includes('data') || lower.includes('seen')) dateIdx = i;
+                    if(lower.includes('sector') && lower.includes('attack')) sectorIdx = i;
+                    if(lower.includes('goal') || lower.includes('obiettivo')) goalIdx = i;
+                    if(lower.includes('screenshot') || lower.includes('image') || lower.includes('foto')) screenshotIdx = i;
+                });
+                
+                console.log('Indices - Site:', siteIdx, 'Date:', dateIdx, 'Sector:', sectorIdx, 'Goal:', goalIdx, 'Screenshot:', screenshotIdx);
+                
+                if(siteIdx === -1 || sectorIdx === -1 || goalIdx === -1) {
+                    updateLoadingStatus('Required columns not found in CSV', false);
+                    return;
+                }
+                
+                const data = [];
+                for(let i = 1; i < lines.length; i++) {
+                    const values = parseCSVLine(lines[i], delimiter);
                     
-                    if(i <= 5) {
-                        console.log(`Row ${i}:`, {
-                            site: rowData.site.substring(0, 50),
-                            sector: rowData.sector,
-                            goal: rowData.goal,
-                            screenshot: rowData.screenshot
-                        });
+                    let sector = values[sectorIdx] || 'UNKNOWN';
+                    let goal = values[goalIdx] || 'UNKNOWN';
+                    
+                    if(sector.startsWith('http') || sector.includes('://') || sector.includes('drive.google')) {
+                        sector = 'UNKNOWN';
+                    }
+                    if(goal.startsWith('http') || goal.includes('://') || goal.includes('drive.google')) {
+                        goal = 'UNKNOWN';
                     }
                     
-                    data.push(rowData);
+                    if(values[siteIdx] && values[siteIdx].length > 0) {
+                        const rowData = {
+                            site: values[siteIdx] || '',
+                            date: dateIdx !== -1 ? parseItalianDate(values[dateIdx]) : '',
+                            sector: sector.trim().toUpperCase(),
+                            goal: goal.trim().toUpperCase(),
+                            screenshot: screenshotIdx !== -1 ? values[screenshotIdx] : '',
+                            rowIndex: i
+                        };
+                        
+                        if(i <= 5) {
+                            console.log(`Row ${i}:`, {
+                                site: rowData.site.substring(0, 50),
+                                sector: rowData.sector,
+                                goal: rowData.goal,
+                                screenshot: rowData.screenshot
+                            });
+                        }
+                        
+                        data.push(rowData);
+                    }
                 }
+                
+                console.log('Parsed', data.length, 'records');
+                
+                currentData = data;
+                filteredData = data;
+                
+                updateLoadingStatus(`✓ Loaded ${data.length} records`, true);
+                
+                document.getElementById('tableContainer').classList.add('active');
+                
+                populateFilters(data);
+                displayPage(filteredData, 1);
+                updateAllCharts(filteredData);
+                
+                setTimeout(() => {
+                    document.getElementById('tableContainer').scrollIntoView({behavior:'smooth'});
+                }, 300);
+                
+            } catch(error) {
+                updateLoadingStatus('Error parsing file: ' + error.message, false);
+                console.error('Parse error:', error);
             }
-            
-            console.log('Parsed', data.length, 'records');
-            
-            currentData = data;
-            filteredData = data;
-            
-            fileInfo.textContent = `✓ Successfully loaded ${data.length} records`;
-            
-            document.getElementById('tableContainer').classList.add('active');
-            
-            populateFilters(data);
-            displayPage(filteredData, 1);
-            updateAllCharts(filteredData);
-            
-            setTimeout(() => {
-                document.getElementById('tableContainer').scrollIntoView({behavior:'smooth'});
-            }, 300);
-            
-        } catch(error) {
-            errorMsg.textContent = '⚠️ Error: ' + error.message;
-            console.error('Parse error:', error);
-        }
-    };
-    
-    reader.onerror = () => {
-        errorMsg.textContent = '⚠️ Error reading file';
-    };
-    
-    reader.readAsText(file);
+        };
+        
+        reader.onerror = () => {
+            updateLoadingStatus('Error reading file', false);
+        };
+        
+        reader.readAsText(file);
+    } catch(error) {
+        updateLoadingStatus('Error: ' + error.message, false);
+        console.error('File handling error:', error);
+    }
+}
+
+function updateLoadingStatus(message, isSuccess) {
+    const statusEl = document.getElementById('loadingStatus');
+    if(isSuccess) {
+        statusEl.innerHTML = `<span class="status-success">✓ ${message}</span>`;
+        setTimeout(() => {
+            statusEl.classList.add('hidden');
+        }, 3000);
+    } else {
+        statusEl.innerHTML = `<span class="status-error">✗ ${message}</span>`;
+    }
 }
 
 document.getElementById('dateStartFilter').addEventListener('change', applyFilters);
@@ -1408,7 +1370,7 @@ async function createChartImage(config, width = 1000, height = 500) {
 // PDF GENERATION - STILE PROFESSIONALE COME DA IMMAGINI
 document.getElementById('generatePdfBtn').addEventListener('click', async function() {
     if(!currentData || currentData.length === 0){
-        alert('⚠️ Nessun dato da esportare!');
+        alert('⚠️ No data to export!');
         return;
     }
 
@@ -1765,14 +1727,15 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         pdf.save(`Phishing_Report_${today.replace(/\//g,'-')}.pdf`);
 
     } catch(error) {
-        console.error('Errore durante la generazione del PDF:', error);
-        alert('Si è verificato un errore durante la generazione del PDF. Controlla la console per i dettagli.');
+        console.error('Error during PDF generation:', error);
+        alert('An error occurred while generating the PDF. Check the console for details.');
     } finally {
         document.getElementById('loadingOverlay').classList.remove('active');
     }
     
     
 });
+
 // ===== AUTO LOAD CSV =====
 document.addEventListener("DOMContentLoaded", () => {
     const csvPath = "data/dati.csv";
@@ -1788,9 +1751,10 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch(err => {
             console.error(err);
-            errorMsg.textContent = "⚠️ Impossibile caricare data/dati.csv";
+            document.getElementById('errorMsg').textContent = "⚠️ Impossibile caricare data/dati.csv";
         });
 });
+
 
 </script>
 </body>
