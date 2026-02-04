@@ -420,6 +420,124 @@ animation: spin 1s linear infinite;
 margin: 0 auto 20px;
 }
 
+/* PAGE SELECTOR */
+.page-selector {
+background: #22253a;
+padding: 20px;
+border-radius: 12px;
+margin-bottom: 30px;
+box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 15px;
+}
+
+.page-selector label {
+font-weight: 600;
+color: #fff;
+letter-spacing: 1px;
+font-size: 1rem;
+}
+
+.page-selector select {
+padding: 10px 15px;
+background: #2c2f4d;
+border: 2px solid #3a3d5c;
+border-radius: 8px;
+color: #fff;
+font-size: 1rem;
+font-family: 'Rajdhani', sans-serif;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.page-selector select:hover,
+.page-selector select:focus {
+border-color: #2962FF;
+background: #1a1d35;
+outline: none;
+}
+
+/* UPLOAD AREA */
+.upload-area {
+border: 3px dashed #2962FF;
+padding: 40px 20px;
+text-align: center;
+cursor: pointer;
+border-radius: 12px;
+transition: all 0.3s ease;
+background: rgba(41, 98, 255, 0.05);
+}
+
+.upload-area:hover {
+border-color: #4CAF50;
+background: rgba(76, 175, 80, 0.1);
+}
+
+.upload-area.dragover {
+border-color: #4CAF50;
+background: rgba(76, 175, 80, 0.15);
+transform: scale(1.02);
+}
+
+.upload-icon {
+font-size: 3rem;
+margin-bottom: 10px;
+}
+
+.file-input {
+display: none;
+}
+
+.file-info {
+margin-top: 15px;
+font-size: 0.95rem;
+color: #27ae60;
+font-weight: 500;
+}
+
+/* PAGE SELECTOR */
+.page-selector {
+background: #22253a;
+padding: 20px;
+border-radius: 12px;
+margin-bottom: 30px;
+box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 15px;
+}
+
+.page-selector label {
+font-weight: 600;
+color: #fff;
+letter-spacing: 1px;
+font-size: 1rem;
+}
+
+.page-selector select {
+padding: 10px 15px;
+background: #2c2f4d;
+border: 2px solid #3a3d5c;
+border-radius: 8px;
+color: #fff;
+font-size: 1rem;
+font-family: 'Rajdhani', sans-serif;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.3s ease;
+}
+
+.page-selector select:hover,
+.page-selector select:focus {
+border-color: #2962FF;
+background: #1a1d35;
+outline: none;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
 .charts-grid-two-cols {
@@ -449,6 +567,27 @@ h1 {
     <span style="margin-left: 10px;">Caricamento dati in corso...</span>
 </div>
 <div id="errorMsg" class="error-msg"></div>
+
+<div style="background: #22253a; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+    <h2 style="margin-bottom: 20px; color: #fff; letter-spacing: 2px; font-size: 1.3rem;">📤 CARICA CSV MANUALE (per Test)</h2>
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📊</div>
+        <p style="font-size:1.1rem;margin-bottom:.5rem">Clicca per caricare CSV file</p>
+        <p style="color:#8b95a5;margin-bottom:1rem">o trascinalo qui</p>
+        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
+    </div>
+    <div id="fileInfo" class="file-info"></div>
+</div>
+
+<div class="page-selector" id="pageSelector" style="display: none;">
+    <label for="pageViewSelect">📊 Seleziona Pagina:</label>
+    <select id="pageViewSelect">
+        <option value="data">Dati - Tabella Completa</option>
+        <option value="sectors">Analisi Settori</option>
+        <option value="goals">Analisi Obiettivi</option>
+        <option value="timeline">Analisi Temporale</option>
+    </select>
+</div>
 
 <div class="table-container" id="tableContainer">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
@@ -555,6 +694,36 @@ const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae
 const dateStartFilter = document.getElementById('dateStartFilter');
 const dateEndFilter = document.getElementById('dateEndFilter');
 
+// Upload area event listeners
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+
+if(uploadArea && fileInput) {
+    uploadArea.onclick = () => fileInput.click();
+
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if(file) handleFile(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if(file) handleFile(file);
+    });
+}
+
 dateStartFilter.addEventListener('click', function() {
     this.showPicker && this.showPicker();
 });
@@ -636,6 +805,9 @@ function parseItalianDate(dateStr) {
 }
 
 function handleFile(file){
+    const fileInfoEl = document.getElementById('fileInfo');
+    if(fileInfoEl) fileInfoEl.textContent = `📁 Caricamento ${file.name}...`;
+    
     try {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -651,7 +823,7 @@ function handleFile(file){
                 
                 const lines = text.split('\n').filter(l => l.trim());
                 if(lines.length < 2) {
-                    updateLoadingStatus('No data found in file', false);
+                    updateLoadingStatus('File è vuoto o non contiene dati', false);
                     return;
                 }
                 
@@ -698,7 +870,7 @@ function handleFile(file){
                 console.log('Indices - Site:', siteIdx, 'Date:', dateIdx, 'Sector:', sectorIdx, 'Goal:', goalIdx, 'Screenshot:', screenshotIdx);
                 
                 if(siteIdx === -1 || sectorIdx === -1 || goalIdx === -1) {
-                    updateLoadingStatus('Required columns not found in CSV', false);
+                    updateLoadingStatus('Colonne richieste non trovate nel CSV', false);
                     return;
                 }
                 
@@ -744,7 +916,7 @@ function handleFile(file){
                 currentData = data;
                 filteredData = data;
                 
-                updateLoadingStatus(`✓ Loaded ${data.length} records`, true);
+                updateLoadingStatus(`✓ Caricati ${data.length} record`, true);
                 
                 document.getElementById('tableContainer').classList.add('active');
                 
@@ -757,31 +929,35 @@ function handleFile(file){
                 }, 300);
                 
             } catch(error) {
-                updateLoadingStatus('Error parsing file: ' + error.message, false);
+                updateLoadingStatus('Errore nel parsing del file: ' + error.message, false);
                 console.error('Parse error:', error);
             }
         };
         
         reader.onerror = () => {
-            updateLoadingStatus('Error reading file', false);
+            updateLoadingStatus('Errore nella lettura del file', false);
         };
         
         reader.readAsText(file);
     } catch(error) {
-        updateLoadingStatus('Error: ' + error.message, false);
+        updateLoadingStatus('Errore: ' + error.message, false);
         console.error('File handling error:', error);
     }
 }
 
 function updateLoadingStatus(message, isSuccess) {
     const statusEl = document.getElementById('loadingStatus');
+    const pageSelector = document.getElementById('pageSelector');
+    
     if(isSuccess) {
         statusEl.innerHTML = `<span class="status-success">✓ ${message}</span>`;
+        pageSelector.style.display = 'flex';
         setTimeout(() => {
             statusEl.classList.add('hidden');
         }, 3000);
     } else {
         statusEl.innerHTML = `<span class="status-error">✗ ${message}</span>`;
+        pageSelector.style.display = 'none';
     }
 }
 
@@ -797,6 +973,96 @@ document.getElementById('resetFiltersBtn').addEventListener('click', function() 
     document.getElementById('goalFilter').value = '';
     applyFilters();
 });
+
+document.getElementById('pageViewSelect').addEventListener('change', function(e) {
+    changePage(e.target.value);
+});
+
+function changePage(page) {
+    const tableContainer = document.getElementById('tableContainer');
+    const chartsGridSectors = document.getElementById('chartsGridSectors');
+    const chartsGridGoalsPie = document.getElementById('chartsGridGoalsPie');
+    const chartsGridMonthAndGoals = document.getElementById('chartsGridMonthAndGoals');
+    
+    // Nascondi tutto
+    tableContainer.classList.remove('active');
+    tableContainer.style.display = 'none';
+    chartsGridSectors.style.display = 'none';
+    chartsGridGoalsPie.style.display = 'none';
+    chartsGridMonthAndGoals.style.display = 'none';
+    
+    chartsGridSectors.classList.remove('active');
+    chartsGridGoalsPie.classList.remove('active');
+    chartsGridMonthAndGoals.classList.remove('active');
+    
+    // Mostra la pagina selezionata
+    switch(page) {
+        case 'data':
+            tableContainer.style.display = 'block';
+            setTimeout(() => tableContainer.classList.add('active'), 50);
+            break;
+        case 'sectors':
+            chartsGridSectors.style.display = 'grid';
+            setTimeout(() => chartsGridSectors.classList.add('active'), 50);
+            break;
+        case 'goals':
+            chartsGridGoalsPie.style.display = 'block';
+            setTimeout(() => chartsGridGoalsPie.classList.add('active'), 50);
+            break;
+        case 'timeline':
+            chartsGridMonthAndGoals.style.display = 'grid';
+            setTimeout(() => chartsGridMonthAndGoals.classList.add('active'), 50);
+            break;
+    }
+    
+    // Scroll in alto
+    document.querySelector('.page-selector').scrollIntoView({behavior:'smooth'});
+}
+
+document.getElementById('pageViewSelect').addEventListener('change', function(e) {
+    changePage(e.target.value);
+});
+
+function changePage(page) {
+    const tableContainer = document.getElementById('tableContainer');
+    const chartsGridSectors = document.getElementById('chartsGridSectors');
+    const chartsGridGoalsPie = document.getElementById('chartsGridGoalsPie');
+    const chartsGridMonthAndGoals = document.getElementById('chartsGridMonthAndGoals');
+    
+    // Nascondi tutto
+    tableContainer.classList.remove('active');
+    tableContainer.style.display = 'none';
+    chartsGridSectors.style.display = 'none';
+    chartsGridGoalsPie.style.display = 'none';
+    chartsGridMonthAndGoals.style.display = 'none';
+    
+    chartsGridSectors.classList.remove('active');
+    chartsGridGoalsPie.classList.remove('active');
+    chartsGridMonthAndGoals.classList.remove('active');
+    
+    // Mostra la pagina selezionata
+    switch(page) {
+        case 'data':
+            tableContainer.style.display = 'block';
+            setTimeout(() => tableContainer.classList.add('active'), 50);
+            break;
+        case 'sectors':
+            chartsGridSectors.style.display = 'grid';
+            setTimeout(() => chartsGridSectors.classList.add('active'), 50);
+            break;
+        case 'goals':
+            chartsGridGoalsPie.style.display = 'block';
+            setTimeout(() => chartsGridGoalsPie.classList.add('active'), 50);
+            break;
+        case 'timeline':
+            chartsGridMonthAndGoals.style.display = 'grid';
+            setTimeout(() => chartsGridMonthAndGoals.classList.add('active'), 50);
+            break;
+    }
+    
+    // Scroll in alto
+    document.querySelector('.page-selector').scrollIntoView({behavior:'smooth'});
+}
 
 function applyFilters() {
     const dateStart = document.getElementById('dateStartFilter').value;
@@ -905,6 +1171,7 @@ function updateAllCharts(data) {
     const goalFilter = document.getElementById('goalFilter').value;
     const dateStart = document.getElementById('dateStartFilter').value;
     const dateEnd = document.getElementById('dateEndFilter').value;
+    const currentPage = document.getElementById('pageViewSelect').value || 'data';
     
     let isLessThanMonth = false;
     if(dateStart && dateEnd) {
@@ -917,7 +1184,7 @@ function updateAllCharts(data) {
     
     const showSectorCharts = !sectorFilter;
     const chartsGridSectors = document.getElementById('chartsGridSectors');
-    if(showSectorCharts) {
+    if(showSectorCharts && currentPage === 'sectors') {
         chartsGridSectors.style.display = 'grid';
         chartsGridSectors.classList.add('active');
         updateAllSectorsChart(data);
@@ -931,7 +1198,7 @@ function updateAllCharts(data) {
     
     const showGoalChart = !goalFilter;
     const chartsGridGoalsPie = document.getElementById('chartsGridGoalsPie');
-    if(showGoalChart) {
+    if(showGoalChart && currentPage === 'goals') {
         chartsGridGoalsPie.style.display = 'block';
         chartsGridGoalsPie.classList.add('active');
         updateGoalsPieChart(data);
@@ -946,7 +1213,7 @@ function updateAllCharts(data) {
     
     const chartsGridMonthAndGoals = document.getElementById('chartsGridMonthAndGoals');
     
-    if(showMonthChart || showGoalsByMonth) {
+    if((showMonthChart || showGoalsByMonth) && currentPage === 'timeline') {
         chartsGridMonthAndGoals.style.display = 'grid';
         chartsGridMonthAndGoals.classList.add('active');
         
