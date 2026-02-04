@@ -464,7 +464,7 @@ h1 {
 
 <div class="upload-section">
     <h2>UPLOAD CSV DATA</h2>
-    <div class="upload-area" id="uploadArea">
+
         <div class="upload-icon">📊</div>
         <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
         <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
@@ -576,7 +576,7 @@ let currentPage = 1;
 const rowsPerPage = 10;
 const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
 
-const uploadArea = document.getElementById('uploadArea');
+
 const fileInput = document.getElementById('fileInput');
 const fileInfo = document.getElementById('fileInfo');
 const errorMsg = document.getElementById('errorMsg');
@@ -608,25 +608,6 @@ dateEndFilter.addEventListener('change', function() {
             this.style.borderColor = '';
         }, 1000);
     }
-});
-
-uploadArea.onclick = () => fileInput.click();
-
-uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.classList.add('dragover');
-});
-
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.classList.remove('dragover');
-});
-
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if(file) handleFile(file);
-});
 
 fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
