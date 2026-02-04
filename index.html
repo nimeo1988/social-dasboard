@@ -443,7 +443,6 @@ margin: 0 auto 20px;
 grid-template-columns: 1fr;
 }
 
-```
 h1 {
     font-size: 1.8rem;
 }
@@ -451,7 +450,6 @@ h1 {
 .container {
     padding: 15px;
 }
-```
 
 }
 </style>
@@ -497,7 +495,6 @@ h1 {
         </button>
     </div>
 
-```
 <div style="text-align:center;margin-bottom:1.5rem;">
     <button id="generatePdfBtn" class="upload-btn" style="background:#27ae60;">
         📄 Generate PDF Report
@@ -525,7 +522,6 @@ h1 {
     <span id="pageInfo">Page 1</span>
     <button id="nextBtn">Next →</button>
 </div>
-```
 
 </div>
 
@@ -1409,230 +1405,369 @@ async function createChartImage(config, width = 1000, height = 500) {
     });
 }
 
-// PDF GENERATION CON ASYNC/AWAIT
+// PDF GENERATION - STILE PROFESSIONALE COME DA IMMAGINI
 document.getElementById('generatePdfBtn').addEventListener('click', async function() {
     if(!currentData || currentData.length === 0){
         alert('⚠️ Nessun dato da esportare!');
         return;
     }
 
-    // Mostra loading overlay
     document.getElementById('loadingOverlay').classList.add('active');
 
     try {
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('p', 'pt', 'a4');
         const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
         const margin = 40;
-
-        // ==================== PAGINA 1: COPERTINA ====================
-        pdf.setFillColor(255, 255, 255);
-        pdf.rect(0, 0, pageWidth, pdf.internal.pageSize.getHeight(), 'F');
-
-        pdf.setFont('Helvetica', 'bold');
-        pdf.setFontSize(28);
-        pdf.text('PHISHING DASHBOARD REPORT', pageWidth / 2, 120, { align: 'center' });
-
-        pdf.setFontSize(16);
-        pdf.setFont('Helvetica', 'normal');
-        pdf.text('Campagne di Phishing – Analisi del Periodo', pageWidth / 2, 160, { align: 'center' });
-
+        
+        const today = new Date().toLocaleDateString('it-IT');
         const minDate = currentData.map(r => r.date).filter(Boolean).sort()[0] || 'N/A';
         const maxDate = currentData.map(r => r.date).filter(Boolean).sort().reverse()[0] || 'N/A';
-        const today = new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' });
+        
+        // Funzione per aggiungere header blu
+        function addHeader(pageNum) {
+            pdf.setFillColor(41, 98, 255);
+            pdf.rect(0, 0, pageWidth, 50, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont('Helvetica', 'bold');
+            pdf.setFontSize(18);
+            pdf.text('ANALISI CAMPAGNE PHISHING', margin, 32);
+        }
+        
+        // Funzione per aggiungere footer
+        function addFooter(pageNum, totalPages) {
+            pdf.setTextColor(150, 150, 150);
+            pdf.setFontSize(9);
+            pdf.text(`Pagina ${pageNum} di ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
+            pdf.text(`Report generato il ${today}`, pageWidth - margin, pageHeight - 20, { align: 'right' });
+        }
 
-        pdf.setFontSize(12);
-        pdf.text(`Periodo analizzato: dal ${minDate} al ${maxDate}`, pageWidth / 2, 190, { align: 'center' });
-        pdf.text(`Report generato il: ${today}`, pageWidth / 2, 210, { align: 'center' });
-
-        pdf.addPage();
-
-        // ==================== PAGINA 2: SINTESI ====================
-        pdf.setFontSize(16);
-        pdf.setFont('Helvetica', 'bold');
-        pdf.setTextColor(0,0,0);
-        pdf.text('SINTESI ESECUTIVA', margin, 50);
-
+        // ==================== PAGINA 1: DATI ESECUTIVI ====================
+        addHeader(1);
+        
+        pdf.setTextColor(80, 80, 80);
         pdf.setFont('Helvetica', 'normal');
+        pdf.setFontSize(11);
+        pdf.text('Campagne di Phishing - Analisi del Periodo', margin, 70);
+        
+        pdf.setFontSize(10);
+        pdf.text(`Periodo di riferimento: dal ${formatDateForDisplay(minDate)} al ${formatDateForDisplay(maxDate)}`, margin, 88);
+        
+        // DATI ESECUTIVI - Box metriche in orizzontale
+        pdf.setFont('Helvetica', 'bold');
         pdf.setFontSize(12);
-        pdf.text(`Nel periodo analizzato sono state identificate ${currentData.length} campagne di phishing.`, margin, 75);
-
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('DATI ESECUTIVI', margin, 120);
+        
+        pdf.setFont('Helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(80, 80, 80);
+        const intro = `Nel periodo analizzato sono state rilevate ${currentData.length} campagne di phishing attive, distribuite su diversi settori e con obiettivi differenti. L'analisi ha individuato pattern di attacco ricorrenti e tendenze significative.`;
+        pdf.text(intro, margin, 140, { maxWidth: pageWidth - 2*margin, lineHeightFactor: 1.5 });
+        
+        // Box metriche colorati orizzontali
         const uniqueDomains = new Set(currentData.map(r => r.site)).size;
         const uniqueSectors = new Set(currentData.map(r => r.sector)).size;
         const uniqueGoals = new Set(currentData.map(r => r.goal)).size;
-
-        const metrics = [
-            {label: 'Campagne rilevate', value: currentData.length},
-            {label: 'Domini malevoli', value: uniqueDomains},
-            {label: 'Settori colpiti', value: uniqueSectors},
-            {label: 'Tipologie attacco', value: uniqueGoals}
-        ];
-
-        let yPos = 100;
-        metrics.forEach(m => {
-            pdf.setFillColor(41, 98, 255);
-            pdf.setTextColor(255, 255, 255);
-            pdf.rect(margin, yPos, 120, 30, 'F');
-            pdf.setFontSize(10);
-            pdf.text(m.label, margin + 60, yPos + 12, { align: 'center' });
-            pdf.setFontSize(14);
-            pdf.text(`${m.value}`, margin + 60, yPos + 25, { align: 'center' });
-            yPos += 50;
-        });
-
-        pdf.addPage();
-
-        // ==================== PAGINA 3: TOP 5 SETTORI ====================
-        pdf.setFontSize(16);
-        pdf.setTextColor(0,0,0);
-        pdf.text('I 5 SETTORI PIÙ COLPITI', margin, 50);
-
-        const top5Sectors = {};
-        currentData.forEach(r => { top5Sectors[r.sector] = (top5Sectors[r.sector] || 0) + 1 });
-        const sortedSectors = Object.entries(top5Sectors).sort((a,b)=>b[1]-a[1]).slice(0,5);
         
-        const barImg = await createChartImage({
+        const metrics = [
+            {label: 'Campagne rilevate', value: currentData.length, color: [41, 98, 255]},
+            {label: 'Domini unici', value: uniqueDomains, color: [244, 67, 54]},
+            {label: 'Settori colpiti', value: uniqueSectors, color: [76, 175, 80]},
+            {label: 'Obiettivi distinti', value: uniqueGoals, color: [156, 39, 176]}
+        ];
+        
+        const boxWidth = (pageWidth - 2*margin - 30) / 4;
+        let xPos = margin;
+        const yPos = 190;
+        
+        metrics.forEach((m, idx) => {
+            // Box colorato
+            pdf.setFillColor(m.color[0], m.color[1], m.color[2]);
+            pdf.roundedRect(xPos, yPos, boxWidth, 70, 3, 3, 'F');
+            
+            // Valore grande
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont('Helvetica', 'bold');
+            pdf.setFontSize(24);
+            pdf.text(m.value.toString(), xPos + boxWidth/2, yPos + 35, { align: 'center' });
+            
+            // Label
+            pdf.setFontSize(9);
+            pdf.setFont('Helvetica', 'normal');
+            pdf.text(m.label, xPos + boxWidth/2, yPos + 55, { align: 'center' });
+            
+            xPos += boxWidth + 10;
+        });
+        
+        // I 5 SETTORI PIÙ COLPITI
+        pdf.setFont('Helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('I SETTORI PIÙ COLPITI', margin, 295);
+        
+        const sectorCounts = {};
+        currentData.forEach(r => { sectorCounts[r.sector] = (sectorCounts[r.sector] || 0) + 1 });
+        const topSectors = Object.entries(sectorCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+        
+        const barChart = await createChartImage({
             type: 'bar',
             data: {
-                labels: sortedSectors.map(([k]) => k),
+                labels: topSectors.map(([k]) => k),
                 datasets: [{
-                    label: 'Campagne',
-                    data: sortedSectors.map(([_,v])=>v),
-                    backgroundColor: ['#2962FF','#F44336','#4CAF50','#FF9800','#9C27B0']
+                    data: topSectors.map(([_,v])=>v),
+                    backgroundColor: ['#2962FF','#F44336','#4CAF50','#FF9800','#9C27B0'],
+                    borderWidth: 0
                 }]
             },
             options: { 
-                responsive: false, 
-                plugins:{legend:{display:false}},
+                indexAxis: 'y',
+                responsive: false,
+                plugins: {
+                    legend: {display: false},
+                    title: {display: false}
+                },
                 scales: {
-                    y: { beginAtZero: true }
+                    x: { 
+                        beginAtZero: true,
+                        grid: {display: true, color: 'rgba(0,0,0,0.05)'}
+                    },
+                    y: {
+                        grid: {display: false}
+                    }
                 }
             }
-        }, 1000, 400);
+        }, 800, 200);
         
-        pdf.addImage(barImg, 'PNG', margin, 70, pageWidth - 2*margin, 250);
-        pdf.text(`Il grafico evidenzia i settori maggiormente bersagliati, permettendo di identificare le aree più vulnerabili.`, margin, 340, { maxWidth: pageWidth - 2*margin });
-
+        pdf.addImage(barChart, 'PNG', margin, 310, pageWidth - 2*margin, 150);
+        
+        pdf.setFont('Helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text('Il grafico mostra i 5 settori più frequentemente attaccati, evidenziando le aree maggiormente a rischio.', margin, 475, {maxWidth: pageWidth - 2*margin});
+        
+        addFooter(1, 3);
+        
+        // ==================== PAGINA 2: ANALISI TEMPORALE ====================
         pdf.addPage();
-
-        // ==================== PAGINA 4: DISTRIBUZIONE TEMPORALE ====================
-        pdf.setFontSize(16);
-        pdf.text('ANALISI TEMPORALE DELLE CAMPAGNE', margin, 50);
-
+        addHeader(2);
+        
+        pdf.setFont('Helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Analisi temporale', margin, 80);
+        
         const monthCounts = {};
         currentData.forEach(r => {
-            if(r.date && r.date.length >= 7){
+            if(r.date && r.date.length >= 7 && r.date.match(/^\d{4}-\d{2}/)){
                 const m = r.date.slice(0,7);
                 monthCounts[m] = (monthCounts[m] || 0)+1;
             }
         });
         const sortedMonths = Object.keys(monthCounts).sort();
-        const counts = sortedMonths.map(m=>monthCounts[m]);
         
-        const monthImg = await createChartImage({
+        const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+        const monthLabels = sortedMonths.map(m => {
+            const parts = m.split('-');
+            if(parts.length === 2) {
+                const monthIdx = parseInt(parts[1]) - 1;
+                if(monthIdx >= 0 && monthIdx < 12) {
+                    return `${monthNames[monthIdx]} ${parts[0]}`;
+                }
+            }
+            return m;
+        });
+        
+        const timeChart = await createChartImage({
             type:'line',
             data:{
-                labels: sortedMonths,
+                labels: monthLabels,
                 datasets:[{
-                    label:'Campagne',
-                    data: counts,
+                    data: sortedMonths.map(m=>monthCounts[m]),
                     borderColor:'#2962FF',
-                    backgroundColor:'rgba(41,98,255,0.15)',
+                    backgroundColor:'rgba(41,98,255,0.2)',
                     fill:true,
-                    tension:0.4
+                    tension:0.4,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#2962FF'
                 }]
             },
             options:{
-                responsive:false, 
-                plugins:{legend:{display:false}},
+                responsive:false,
+                plugins:{
+                    legend:{display:false},
+                    title: {display: false}
+                },
                 scales: {
-                    y: { beginAtZero: true }
+                    y: { 
+                        beginAtZero: true,
+                        grid: {color: 'rgba(0,0,0,0.05)'}
+                    },
+                    x: {
+                        grid: {display: false}
+                    }
                 }
             }
-        }, 1000, 400);
+        }, 900, 250);
         
-        pdf.addImage(monthImg, 'PNG', margin, 70, pageWidth - 2*margin, 250);
-        pdf.text(`Il grafico mostra l'evoluzione delle campagne mese per mese, evidenziando i picchi di attività phishing.`, margin, 340, { maxWidth: pageWidth - 2*margin });
-
+        pdf.addImage(timeChart, 'PNG', margin, 100, pageWidth - 2*margin, 180);
+        
+        pdf.setFont('Helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        const timeDesc = 'Il grafico mostra l\'andamento temporale delle campagne di phishing rilevate. È possibile osservare i picchi di attività e identificare pattern stagionali o trend in aumento/diminuzione.';
+        pdf.text(timeDesc, margin, 295, {maxWidth: pageWidth - 2*margin, lineHeightFactor: 1.5});
+        
+        // EVOLUZIONE PER SETTORE
+        pdf.setFont('Helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Evoluzione per settore', margin, 340);
+        
+        const monthSectorMap = {};
+        const allSectors = new Set();
+        currentData.forEach(r => {
+            if(r.date && r.date.length >=7 && r.date.match(/^\d{4}-\d{2}/) && r.sector){
+                const month = r.date.slice(0,7);
+                allSectors.add(r.sector);
+                if(!monthSectorMap[month]) monthSectorMap[month]={};
+                monthSectorMap[month][r.sector]=(monthSectorMap[month][r.sector]||0)+1;
+            }
+        });
+        
+        const sortedMonths2 = Object.keys(monthSectorMap).sort();
+        const sectorCountsForSort = {};
+        currentData.forEach(r => {
+            if(r.sector) sectorCountsForSort[r.sector] = (sectorCountsForSort[r.sector] || 0) + 1;
+        });
+        const topSectorsForChart = Object.entries(sectorCountsForSort).sort((a,b) => b[1] - a[1]).slice(0, 6).map(([s]) => s);
+        
+        const lineColors = ['#2962FF','#F44336','#4CAF50','#FF9800','#9C27B0','#00BCD4'];
+        
+        const monthLabels2 = sortedMonths2.map(m => {
+            const parts = m.split('-');
+            if(parts.length === 2) {
+                const monthIdx = parseInt(parts[1]) - 1;
+                if(monthIdx >= 0 && monthIdx < 12) {
+                    return `${monthNames[monthIdx]} ${parts[0]}`;
+                }
+            }
+            return m;
+        });
+        
+        const evolutionChart = await createChartImage({
+            type:'line',
+            data:{
+                labels: monthLabels2,
+                datasets: topSectorsForChart.map((sector, idx)=>({
+                    label: sector,
+                    data: sortedMonths2.map(m=>monthSectorMap[m][sector]||0),
+                    borderColor: lineColors[idx % lineColors.length],
+                    backgroundColor:'transparent',
+                    fill:false,
+                    tension:0.3,
+                    borderWidth: 2.5,
+                    pointRadius: 3
+                }))
+            },
+            options:{
+                responsive:false,
+                plugins:{
+                    legend:{
+                        position:'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: {size: 8},
+                            padding: 8
+                        }
+                    },
+                    title: {display: false}
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: {color: 'rgba(0,0,0,0.05)'}
+                    },
+                    x: {
+                        grid: {display: false},
+                        ticks: {font: {size: 8}}
+                    }
+                }
+            }
+        }, 900, 250);
+        
+        pdf.addImage(evolutionChart, 'PNG', margin, 360, pageWidth - 2*margin, 180);
+        
+        pdf.setFont('Helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        const evolDesc = 'Questo grafico mostra come le diverse tipologie di attacco si sono distribuite nel tempo, permettendo di individuare quali settori hanno subito incrementi o diminuzioni nelle campagne di phishing.';
+        pdf.text(evolDesc, margin, 555, {maxWidth: pageWidth - 2*margin, lineHeightFactor: 1.5});
+        
+        addFooter(2, 3);
+        
+        // ==================== PAGINA 3: OBIETTIVI DEGLI ATTACCHI ====================
         pdf.addPage();
-
-        // ==================== PAGINA 5: OBIETTIVI ATTACCO ====================
-        pdf.setFontSize(16);
-        pdf.text('DISTRIBUZIONE OBIETTIVI DI ATTACCO', margin, 50);
-
+        addHeader(3);
+        
+        pdf.setFont('Helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Obiettivi degli attacchi', margin, 80);
+        
         const goalsCount = {};
         currentData.forEach(r => { goalsCount[r.goal] = (goalsCount[r.goal] || 0) +1 });
         const sortedGoals = Object.entries(goalsCount).sort((a,b)=>b[1]-a[1]);
-
-        const goalsImg = await createChartImage({
-            type:'doughnut',
+        
+        const goalsBarChart = await createChartImage({
+            type:'bar',
             data:{
                 labels: sortedGoals.map(([k])=>k),
                 datasets:[{
                     data: sortedGoals.map(([_,v])=>v),
-                    backgroundColor: colors
+                    backgroundColor: colors,
+                    borderWidth: 0
                 }]
             },
             options:{
-                responsive:false, 
-                plugins:{legend:{position:'bottom'}}
-            }
-        }, 1000, 400);
-        
-        pdf.addImage(goalsImg,'PNG',margin,70,pageWidth-2*margin,250);
-        pdf.text(`Questo grafico evidenzia le tipologie di attacco più utilizzate dai phisher, utile per capire le strategie predominanti.`, margin,340,{ maxWidth: pageWidth - 2*margin });
-
-        // ==================== PAGINA 6: CAMPAGNE PER OBIETTIVO NEL TEMPO ====================
-        pdf.addPage();
-        pdf.setFontSize(16);
-        pdf.text('CAMPAGNE PER OBIETTIVO NEL TEMPO', margin, 50);
-
-        const monthGoalMap = {};
-        const allGoalsSet = new Set();
-        currentData.forEach(r => {
-            if(r.date && r.date.length >=7 && r.goal){
-                const month = r.date.slice(0,7);
-                allGoalsSet.add(r.goal);
-                if(!monthGoalMap[month]) monthGoalMap[month]={};
-                monthGoalMap[month][r.goal]=(monthGoalMap[month][r.goal]||0)+1;
-            }
-        });
-        const sortedMonths2 = Object.keys(monthGoalMap).sort();
-        const allGoalsArr = Array.from(allGoalsSet);
-
-        const multiLineImg = await createChartImage({
-            type:'line',
-            data:{
-                labels: sortedMonths2,
-                datasets: allGoalsArr.map((goal, idx)=>({
-                    label:goal,
-                    data: sortedMonths2.map(m=>monthGoalMap[m][goal]||0),
-                    borderColor: colors[idx % colors.length],
-                    backgroundColor:'transparent',
-                    fill:false,
-                    tension:0.4
-                }))
-            },
-            options:{
-                responsive:false, 
-                plugins:{legend:{position:'bottom'}},
+                indexAxis: 'y',
+                responsive:false,
+                plugins:{
+                    legend:{display:false},
+                    title: {display: false}
+                },
                 scales: {
-                    y: { beginAtZero: true }
+                    x: { 
+                        beginAtZero: true,
+                        grid: {display: true, color: 'rgba(0,0,0,0.05)'}
+                    },
+                    y: {
+                        grid: {display: false},
+                        ticks: {font: {size: 9}}
+                    }
                 }
             }
-        }, 1000, 400);
+        }, 900, 350);
         
-        pdf.addImage(multiLineImg,'PNG',margin,70,pageWidth-2*margin,250);
-        pdf.text(`Evidenzia come le campagne per settore e obiettivo siano variate nel tempo, utile per analisi temporale avanzata.`, margin,340,{ maxWidth: pageWidth - 2*margin });
-
-        // ==================== SALVATAGGIO PDF ====================
+        pdf.addImage(goalsBarChart,'PNG', margin, 100, pageWidth - 2*margin, 250);
+        
+        pdf.setFont('Helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        const goalsDesc = 'Il grafico mostra la distribuzione degli obiettivi delle campagne di phishing. Account theft, data theft e banking data theft sono tra gli obiettivi più comuni, seguiti da crypto wallet theft e altre tipologie di frode.';
+        pdf.text(goalsDesc, margin, 365, {maxWidth: pageWidth - 2*margin, lineHeightFactor: 1.5});
+        
+        addFooter(3, 3);
+        
+        // Salva PDF
         pdf.save(`Phishing_Report_${today.replace(/\//g,'-')}.pdf`);
 
     } catch(error) {
         console.error('Errore durante la generazione del PDF:', error);
         alert('Si è verificato un errore durante la generazione del PDF. Controlla la console per i dettagli.');
     } finally {
-        // Nascondi loading overlay
         document.getElementById('loadingOverlay').classList.remove('active');
     }
 });
