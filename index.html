@@ -568,17 +568,6 @@ h1 {
 </div>
 <div id="errorMsg" class="error-msg"></div>
 
-<div style="background: #22253a; padding: 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-    <h2 style="margin-bottom: 20px; color: #fff; letter-spacing: 2px; font-size: 1.3rem;">📤 CARICA CSV MANUALE (per Test)</h2>
-    <div class="upload-area" id="uploadArea">
-        <div class="upload-icon">📊</div>
-        <p style="font-size:1.1rem;margin-bottom:.5rem">Clicca per caricare CSV file</p>
-        <p style="color:#8b95a5;margin-bottom:1rem">o trascinalo qui</p>
-        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
-    </div>
-    <div id="fileInfo" class="file-info"></div>
-</div>
-
 <div class="page-selector" id="pageSelector" style="display: none;">
     <label for="pageViewSelect">📊 Seleziona Pagina:</label>
     <select id="pageViewSelect">
@@ -694,36 +683,6 @@ const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae
 
 const dateStartFilter = document.getElementById('dateStartFilter');
 const dateEndFilter = document.getElementById('dateEndFilter');
-
-// Upload area event listeners
-const uploadArea = document.getElementById('uploadArea');
-const fileInput = document.getElementById('fileInput');
-const fileInfo = document.getElementById('fileInfo');
-
-if(uploadArea && fileInput) {
-    uploadArea.onclick = () => fileInput.click();
-
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
-
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-    });
-
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        const file = e.dataTransfer.files[0];
-        if(file) handleFile(file);
-    });
-
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if(file) handleFile(file);
-    });
-}
 
 dateStartFilter.addEventListener('click', function() {
     this.showPicker && this.showPicker();
