@@ -831,11 +831,29 @@ function handleFile(file){
                 if(values[siteIdx] && values[siteIdx].length > 0) {
                     const rowData = {
                         site: values[siteIdx] || '',
-                        date: dateIdx !== -1 ? parseItalianDate(values[dateIdx]) : '',
-                        sector: sector.trim().toUpperCase(),
-                        goal: goal.trim().toUpperCase(),
-                        screenshot: screenshotIdx !== -1 ? values[screenshotIdx] : '',
-                        rowIndex: i
+                        let rawDate = dateIdx !== -1 ? (values[dateIdx] || '').trim() : '';
+let normalizedDate = '';
+
+if (rawDate) {
+  // Nuovo formato ISO: 2025-01-20 11:44:06 → 2025-01-20
+  if (/^\d{4}-\d{2}-\d{2}/.test(rawDate)) {
+    normalizedDate = rawDate.slice(0, 10);
+  } 
+  // Vecchi formati tipo "20/01/2025"
+  else if (rawDate) {
+    normalizedDate = parseItalianDate(rawDate) || '';
+  }
+}
+
+const rowData = {
+  site: values[siteIdx] || '',
+  date: normalizedDate,
+  sector: sector.trim().toUpperCase(),
+  goal: goal.trim().toUpperCase(),
+  screenshot: screenshotIdx !== -1 ? values[screenshotIdx] : '',
+  rowIndex: i
+};
+
                     };
                     
                     if(i <= 5) {
