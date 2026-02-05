@@ -462,6 +462,18 @@ h1 {
     <div class="subtitle">Phishing Sites & Human Attack Surface</div>
 </header>
 
+<div class="upload-section">
+    <h2>UPLOAD CSV DATA</h2>
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📊</div>
+        <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
+        <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
+        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
+    </div>
+    <div id="fileInfo" class="file-info"></div>
+    <div id="errorMsg" class="error-msg"></div>
+</div>
+
 <div class="table-container" id="tableContainer">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
         <div class="date-input-wrapper">
@@ -575,6 +587,11 @@ let currentPage = 1;
 const rowsPerPage = 10;
 const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
 
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const errorMsg = document.getElementById('errorMsg');
+
 const dateStartFilter = document.getElementById('dateStartFilter');
 const dateEndFilter = document.getElementById('dateEndFilter');
 
@@ -602,6 +619,29 @@ dateEndFilter.addEventListener('change', function() {
             this.style.borderColor = '';
         }, 1000);
     }
+});
+
+uploadArea.onclick = () => fileInput.click();
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if(file) handleFile(file);
+});
+
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file) handleFile(file);
 });
 
 function getLocalImagePath(screenshotName) {
@@ -1945,9 +1985,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 
 // AUTO LOAD CSV ON PAGE LOAD
 document.addEventListener('DOMContentLoaded', function() {
-    const csvPath = 'data/dati.csv';
-    
-    console.log('Caricamento CSV da:', csvPath);
+    const csvPath = '/social-dashboard/data/dati.csv';
     
     fetch(csvPath)
         .then(response => {
@@ -1957,13 +1995,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.text();
         })
         .then(text => {
-            console.log('✓ CSV caricato! Righe:', text.split('\n').length);
             const file = new File([text], 'dati.csv', { type: 'text/csv' });
             handleFile(file);
         })
         .catch(err => {
-            console.error('✗ Errore caricamento CSV:', err.message);
-            console.log('📁 Assicurati che data/dati.csv esista su GitHub');
+            console.warn('⚠️ Auto-load fallito: ' + err.message);
+            console.log('📁 Carica manualmente un file CSV per iniziare');
         });
 });
 
