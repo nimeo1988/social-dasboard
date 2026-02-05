@@ -13,7 +13,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-font-family: 'Rajdhani', sans-serif;
+font-family: ‘Rajdhani’, sans-serif;
 background: #1a1d35;
 color: #fff;
 line-height: 1.6;
@@ -134,7 +134,7 @@ border: 2px solid #3a3d5c;
 border-radius: 8px;
 color: #fff;
 font-size: 0.95rem;
-font-family: 'Rajdhani', sans-serif;
+font-family: ‘Rajdhani’, sans-serif;
 transition: all 0.3s ease;
 }
 
@@ -154,34 +154,34 @@ position: relative;
 width: 100%;
 }
 
-.date-input-wrapper input[type="date"] {
+.date-input-wrapper input[type=“date”] {
 width: 100%;
 cursor: pointer;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator {
+input[type=“date”]::-webkit-calendar-picker-indicator {
 cursor: pointer;
 opacity: 1;
 filter: invert(0.7);
 font-size: 1.2em;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+input[type=“date”]::-webkit-calendar-picker-indicator:hover {
 filter: invert(0.9);
 }
 
-input[type="date"]::-moz-calendar-picker-indicator {
+input[type=“date”]::-moz-calendar-picker-indicator {
 cursor: pointer;
 opacity: 1;
 filter: invert(0.7);
 }
 
-input[type="date"]:focus {
+input[type=“date”]:focus {
 outline: 2px solid #2962FF;
 outline-offset: 2px;
 }
 
-.search-box[type="date"] {
+.search-box[type=“date”] {
 position: relative;
 padding-right: 40px;
 }
@@ -209,7 +209,7 @@ color: #fff;
 border: none;
 border-radius: 8px;
 font-size: 1rem;
-font-family: 'Rajdhani', sans-serif;
+font-family: ‘Rajdhani’, sans-serif;
 font-weight: 600;
 cursor: pointer;
 transition: all 0.3s ease;
@@ -296,7 +296,7 @@ border: 2px solid #3a3d5c;
 color: #fff;
 border-radius: 8px;
 cursor: pointer;
-font-family: 'Rajdhani', sans-serif;
+font-family: ‘Rajdhani’, sans-serif;
 font-weight: 600;
 transition: all 0.3s ease;
 }
@@ -462,6 +462,18 @@ h1 {
     <div class="subtitle">Phishing Sites & Human Attack Surface</div>
 </header>
 
+<div class="upload-section">
+    <h2>UPLOAD CSV DATA</h2>
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📊</div>
+        <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
+        <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
+        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
+    </div>
+    <div id="fileInfo" class="file-info"></div>
+    <div id="errorMsg" class="error-msg"></div>
+</div>
+
 <div class="table-container" id="tableContainer">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
         <div class="date-input-wrapper">
@@ -508,7 +520,6 @@ h1 {
 <div class="pagination">
     <button id="prevBtn">← Previous</button>
     <span id="pageInfo">Page 1</span>
-    <input type="number" id="pageJump" min="1" placeholder="Go to page..." style="width: 100px; padding: 8px 12px; background: #2c2f4d; border: 2px solid #3a3d5c; border-radius: 8px; color: #fff; font-family: 'Rajdhani', sans-serif; text-align: center; font-weight: 600; margin: 0 10px;">
     <button id="nextBtn">Next →</button>
 </div>
 
@@ -532,24 +543,13 @@ h1 {
     </div>
 </div>
 
-<div class="charts-grid-two-cols" id="chartsGridTimelineMain" style="display:none;">
+<div class="charts-grid-two-cols" id="chartsGridMonthAndGoals" style="display:none;">
     <div class="chart-card">
-        <h3>Attacchi Temporali - Trend Mensile</h3>
+        <h3>Analisi temporale</h3>
         <div class="chart-wrapper"><canvas id="monthChart"></canvas></div>
     </div>
     <div class="chart-card">
-        <h3>Attack Goals - Evoluzione Temporale</h3>
-        <div class="chart-wrapper"><canvas id="attackGoalsTimeChart"></canvas></div>
-    </div>
-</div>
-
-<div class="charts-grid-two-cols" id="chartsGridMonthAndGoals" style="display:none;">
-    <div class="chart-card">
-        <h3>Distribuzione per Obiettivi</h3>
-        <div class="chart-wrapper"><canvas id="goalsTimelineChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-        <h3>Evoluzione per Settore</h3>
+        <h3>Evoluzione per settore</h3>
         <div class="chart-wrapper"><canvas id="goalsByMonthChart"></canvas></div>
     </div>
 </div>
@@ -569,12 +569,69 @@ h1 {
 </div>
 
 <script>
-let allSectorsChart, top5SectorsBarChart, goalsPieChart, monthChart, goalsByMonthChart, attackGoalsTimeChart, goalsTimelineChart;
+let allSectorsChart, top5SectorsBarChart, goalsPieChart, monthChart, goalsByMonthChart;
 let currentData = [];
 let filteredData = [];
 let currentPage = 1;
 const rowsPerPage = 10;
 const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
+
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const errorMsg = document.getElementById('errorMsg');
+
+const dateStartFilter = document.getElementById('dateStartFilter');
+const dateEndFilter = document.getElementById('dateEndFilter');
+
+dateStartFilter.addEventListener('click', function() {
+    this.showPicker && this.showPicker();
+});
+
+dateEndFilter.addEventListener('click', function() {
+    this.showPicker && this.showPicker();
+});
+
+dateStartFilter.addEventListener('change', function() {
+    if(this.value) {
+        this.style.borderColor = '#2962FF';
+        setTimeout(() => {
+            this.style.borderColor = '';
+        }, 1000);
+    }
+});
+
+dateEndFilter.addEventListener('change', function() {
+    if(this.value) {
+        this.style.borderColor = '#2962FF';
+        setTimeout(() => {
+            this.style.borderColor = '';
+        }, 1000);
+    }
+});
+
+uploadArea.onclick = () => fileInput.click();
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if(file) handleFile(file);
+});
+
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file) handleFile(file);
+});
 
 function getLocalImagePath(screenshotName) {
     if (screenshotName && screenshotName.trim() !== '') {
@@ -601,44 +658,11 @@ document.addEventListener('keydown', function(event) {
 });
 
 function parseItalianDate(dateStr) {
+    // Converte date dal formato dd/mm/yyyy HH:MM al formato yyyy-mm-dd
     if (!dateStr || dateStr.trim() === '') return '';
     
-    // Gestisce sia il formato dd/mm/yyyy che yyyy-mm-dd (con o senza orario)
-    const trimmed = dateStr.trim();
-    
-    // Se è nel formato ISO (2026-02-05 o 2026-02-05 08:54:47)
-    if (trimmed.match(/^\d{4}-\d{2}-\d{2}/)) {
-        // Estrai la data e opzionalmente l'orario
-        const parts = trimmed.split(' ');
-        const datePart = parts[0]; // 2026-02-05
-        const timePart = parts[1] || ''; // 08:54:47 (opzionale)
-        
-        const dateParts = datePart.split('-');
-        
-        if (dateParts.length === 3) {
-            const year = dateParts[0].trim();
-            const month = dateParts[1].trim();
-            const day = dateParts[2].trim();
-            
-            // Validazione base
-            const dayNum = parseInt(day);
-            const monthNum = parseInt(month);
-            const yearNum = parseInt(year);
-            
-            if (dayNum >= 1 && dayNum <= 31 && 
-                monthNum >= 1 && monthNum <= 12 && 
-                yearNum >= 1900 && yearNum <= 2100) {
-                // Ritorna data + ora se presente
-                if (timePart) {
-                    return `${year}-${month}-${day} ${timePart}`;
-                }
-                return `${year}-${month}-${day}`;
-            }
-        }
-    }
-    
-    // Se è nel formato italiano (dd/mm/yyyy)
-    const datePart = trimmed.split(' ')[0];
+    // Estrai solo la parte della data (ignora l'orario se presente)
+    const datePart = dateStr.trim().split(' ')[0];
     const parts = datePart.split('/');
     
     if (parts.length === 3) {
@@ -658,7 +682,7 @@ function parseItalianDate(dateStr) {
         }
     }
     
-    return '';
+    return ''; // Ritorna stringa vuota se non è valido
 }
 
 function handleFile(file){
@@ -868,40 +892,13 @@ document.getElementById('nextBtn').onclick = () => {
     }
 };
 
-document.getElementById('pageJump').addEventListener('keypress', function(e) {
-    if(e.key === 'Enter') {
-        const pageNum = parseInt(this.value);
-        const total = Math.ceil(filteredData.length / rowsPerPage);
-        
-        if(pageNum >= 1 && pageNum <= total) {
-            displayPage(filteredData, pageNum);
-            this.value = '';
-        } else {
-            alert(`⚠️ Pagina non valida! Inserisci un numero tra 1 e ${total}`);
-            this.value = '';
-        }
-    }
-});
-
 function formatDateForDisplay(isoDate) {
-    // Converte yyyy-mm-dd o yyyy-mm-dd HH:MM:SS in dd/mm/yyyy HH:MM:SS per la visualizzazione
+    // Converte yyyy-mm-dd in dd/mm/yyyy per la visualizzazione
     if (!isoDate || isoDate.length < 10) return '-';
     
-    // Separa data e ora
-    const parts = isoDate.split(' ');
-    const datePart = parts[0]; // yyyy-mm-dd
-    const timePart = parts[1] || ''; // HH:MM:SS (opzionale)
-    
-    const dateParts = datePart.split('-');
-    if (dateParts.length === 3) {
-        const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-        
-        // Se c'è l'orario, aggiungilo
-        if (timePart) {
-            return `${formattedDate} ${timePart}`;
-        }
-        
-        return formattedDate;
+    const parts = isoDate.split('-');
+    if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
     
     return isoDate;
@@ -986,30 +983,27 @@ function updateAllCharts(data) {
     const showMonthChart = !isLessThanMonth;
     const showGoalsByMonth = !goalFilter;
     
-    const chartsGridTimelineMain = document.getElementById('chartsGridTimelineMain');
     const chartsGridMonthAndGoals = document.getElementById('chartsGridMonthAndGoals');
     
-    if(showMonthChart && showGoalsByMonth) {
-        chartsGridTimelineMain.style.display = 'grid';
-        chartsGridTimelineMain.classList.add('active');
-        updateMonthChart(data);
-        updateAttackGoalsTimeChart(data);
-    } else {
-        chartsGridTimelineMain.style.display = 'none';
-        chartsGridTimelineMain.classList.remove('active');
-        if(monthChart) monthChart.destroy();
-        if(attackGoalsTimeChart) attackGoalsTimeChart.destroy();
-    }
-    
-    if(showGoalsByMonth) {
+    if(showMonthChart || showGoalsByMonth) {
         chartsGridMonthAndGoals.style.display = 'grid';
         chartsGridMonthAndGoals.classList.add('active');
-        updateGoalsTimelineChart(data);
-        updateGoalsByMonthChart(data);
+        
+        if(showMonthChart) {
+            updateMonthChart(data);
+        } else {
+            if(monthChart) monthChart.destroy();
+        }
+        
+        if(showGoalsByMonth) {
+            updateGoalsByMonthChart(data);
+        } else {
+            if(goalsByMonthChart) goalsByMonthChart.destroy();
+        }
     } else {
         chartsGridMonthAndGoals.style.display = 'none';
         chartsGridMonthAndGoals.classList.remove('active');
-        if(goalsTimelineChart) goalsTimelineChart.destroy();
+        if(monthChart) monthChart.destroy();
         if(goalsByMonthChart) goalsByMonthChart.destroy();
     }
 }
@@ -1168,6 +1162,7 @@ function updateMonthChart(data){
     data.forEach(r => {
         if(r.date && r.date.length >= 7) {
             const m = r.date.slice(0, 7);
+            // Verifica che il formato sia corretto (yyyy-mm)
             if(m.match(/^\d{4}-\d{2}$/)) {
                 months[m] = (months[m] || 0) + 1;
             }
@@ -1186,7 +1181,7 @@ function updateMonthChart(data){
                 return `${monthNames[monthIdx]} ${year}`;
             }
         }
-        return m;
+        return m; // Fallback al valore originale se non è valido
     });
 
     monthChart = new Chart(document.getElementById('monthChart'), {
@@ -1263,170 +1258,6 @@ function updateMonthChart(data){
     });
 }
 
-function updateGoalsTimelineChart(data){
-    if(goalsTimelineChart) goalsTimelineChart.destroy();
-    
-    const goals = {};
-    data.forEach(r => {
-        if(r.goal) goals[r.goal] = (goals[r.goal] || 0) + 1;
-    });
-    const sorted = Object.entries(goals).sort((a,b) => b[1] - a[1]);
-    
-    const dynamicColors = sorted.map((_, idx) => colors[idx % colors.length]);
-    
-    goalsTimelineChart = new Chart(document.getElementById('goalsTimelineChart'), {
-        type: 'bar',
-        data: {
-            labels: sorted.map(([k]) => k),
-            datasets: [{
-                label: 'Numero Attacchi',
-                data: sorted.map(([_,v]) => v),
-                backgroundColor: dynamicColors,
-                borderWidth: 0,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {display: false},
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    titleColor: '#FFFFFF',
-                    bodyColor: '#FFFFFF',
-                    cornerRadius: 6,
-                    padding: 10
-                }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: {color: '#a8b2c1', font: {size: 10}},
-                    grid: {color: 'rgba(168,178,193,0.1)'}
-                },
-                y: {
-                    ticks: {color: '#a8b2c1', font: {size: 10}},
-                    grid: {display: false}
-                }
-            }
-        }
-    });
-}
-
-function updateAttackGoalsTimeChart(data){
-    if(attackGoalsTimeChart) attackGoalsTimeChart.destroy();
-    
-    const monthGoalMap = {};
-    data.forEach(r => {
-        if(r.date && r.date.length >= 7 && r.goal) {
-            const month = r.date.slice(0, 7);
-            if(month.match(/^\d{4}-\d{2}$/)) {
-                if(!monthGoalMap[month]) monthGoalMap[month] = {};
-                monthGoalMap[month][r.goal] = (monthGoalMap[month][r.goal] || 0) + 1;
-            }
-        }
-    });
-    
-    const sortedMonths = Object.keys(monthGoalMap).sort();
-    const goalCounts = {};
-    data.forEach(r => {
-        if(r.goal) goalCounts[r.goal] = (goalCounts[r.goal] || 0) + 1;
-    });
-    const topGoals = Object.entries(goalCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([g]) => g);
-    
-    const lineColors = ['#2962FF', '#F44336', '#4CAF50', '#FF9800', '#9C27B0'];
-    
-    const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-    const monthLabels = sortedMonths.map(m => {
-        const [year, month] = m.split('-');
-        const monthIdx = parseInt(month) - 1;
-        if(monthIdx >= 0 && monthIdx < 12) {
-            return `${monthNames[monthIdx]} ${year}`;
-        }
-        return m;
-    });
-    
-    const datasets = topGoals.map((goal, idx) => ({
-        label: goal,
-        data: sortedMonths.map(month => monthGoalMap[month][goal] || 0),
-        borderColor: lineColors[idx % lineColors.length],
-        backgroundColor: 'transparent',
-        borderWidth: 2.5,
-        fill: false,
-        tension: 0.4,
-        pointRadius: 4,
-        pointBackgroundColor: lineColors[idx % lineColors.length],
-        pointBorderColor: '#fff',
-        pointBorderWidth: 1.5,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: lineColors[idx % lineColors.length],
-        pointHoverBorderColor: '#fff',
-        pointHoverBorderWidth: 2
-    }));
-    
-    attackGoalsTimeChart = new Chart(document.getElementById('attackGoalsTimeChart'), {
-        type: 'line',
-        data: {
-            labels: monthLabels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#a8b2c1',
-                        font: {size: 9},
-                        padding: 8,
-                        boxWidth: 15
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    cornerRadius: 6,
-                    padding: 10,
-                    mode: 'index',
-                    intersect: false
-                }
-            },
-            scales: {
-                x: {
-                    ticks: {
-                        color: '#a8b2c1',
-                        font: {size: 9},
-                        maxRotation: 45,
-                        minRotation: 45
-                    },
-                    grid: {
-                        display: true,
-                        color: 'rgba(168,178,193,0.05)'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: '#a8b2c1',
-                        font: {size: 10}
-                    },
-                    grid: {
-                        color: 'rgba(168,178,193,0.1)'
-                    }
-                }
-            },
-            interaction: {
-                mode: 'index',
-                intersect: false
-            }
-        }
-    });
-}
-
 function updateGoalsByMonthChart(data){
     if(goalsByMonthChart) goalsByMonthChart.destroy();
     const monthGoalMap = {};
@@ -1434,6 +1265,7 @@ function updateGoalsByMonthChart(data){
     data.forEach(r => {
         if(r.date && r.date.length >= 7 && r.goal) {
             const month = r.date.slice(0, 7);
+            // Verifica che il formato sia corretto (yyyy-mm)
             if(month.match(/^\d{4}-\d{2}$/)) {
                 allGoals.add(r.goal);
                 if(!monthGoalMap[month]) monthGoalMap[month] = {};
@@ -1448,6 +1280,7 @@ function updateGoalsByMonthChart(data){
     });
     const sortedGoals = Object.entries(goalCounts).sort((a,b) => b[1] - a[1]).map(([g]) => g);
 
+    // Colori vivaci per le linee come nell'immagine
     const lineColors = [
         '#2962FF',  // Blu
         '#F44336',  // Rosso
@@ -1470,15 +1303,18 @@ function updateGoalsByMonthChart(data){
         label: goal,
         data: sortedMonths.map(month => monthGoalMap[month][goal] || 0),
         borderColor: lineColors[idx % lineColors.length],
-        backgroundColor: lineColors[idx % lineColors.length],
-        borderWidth: 2,
-        fill: true,
+        backgroundColor: 'transparent',
+        borderWidth: 2.5,
+        fill: false,
         tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 6,
+        pointRadius: 4,
         pointBackgroundColor: lineColors[idx % lineColors.length],
         pointBorderColor: '#fff',
-        pointBorderWidth: 2
+        pointBorderWidth: 1.5,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: lineColors[idx % lineColors.length],
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2
     }));
 
     const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
@@ -1497,46 +1333,32 @@ function updateGoalsByMonthChart(data){
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                filler: {
-                    propagate: true
-                },
                 legend: {
                     position: 'bottom',
                     labels: { 
                         color: '#a8b2c1', 
-                        font: { size: 10 }, 
-                        padding: 12,
+                        font: { size: 9 }, 
+                        padding: 8,
                         boxWidth: 15,
-                        boxHeight: 4,
+                        boxHeight: 2,
                         usePointStyle: false
                     }
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.9)',
+                    backgroundColor: 'rgba(0,0,0,0.85)',
                     titleColor: '#fff',
                     bodyColor: '#fff',
-                    cornerRadius: 8,
-                    padding: 12,
+                    cornerRadius: 6,
+                    padding: 10,
                     mode: 'index',
-                    intersect: false,
-                    displayColors: true,
-                    callbacks: {
-                        footer: function(context) {
-                            let sum = 0;
-                            context.forEach(item => {
-                                sum += item.parsed.y;
-                            });
-                            return 'Totale: ' + sum;
-                        }
-                    }
+                    intersect: false
                 }
             },
             scales: {
                 x: {
-                    stacked: true,
                     ticks: { 
                         color: '#a8b2c1', 
-                        font: { size: 10 },
+                        font: { size: 9 },
                         maxRotation: 45,
                         minRotation: 45
                     },
@@ -1546,22 +1368,26 @@ function updateGoalsByMonthChart(data){
                     }
                 },
                 y: {
-                    stacked: true,
                     beginAtZero: true,
                     ticks: { 
                         color: '#a8b2c1', 
-                        font: { size: 11 },
-                        stepSize: 20
+                        font: { size: 10 },
+                        stepSize: 10
                     },
                     grid: { 
                         color: 'rgba(168,178,193,0.1)'
                     }
                 }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
             }
         }
     });
 }
 
+// FUNZIONE HELPER PER CREARE GRAFICI PER IL PDF
 async function createChartImage(config, width = 1000, height = 500) {
     return new Promise((resolve) => {
         const canvas = document.createElement('canvas');
@@ -1570,6 +1396,7 @@ async function createChartImage(config, width = 1000, height = 500) {
         
         const chart = new Chart(canvas, config);
         
+        // Aspetta che il grafico sia renderizzato
         setTimeout(() => {
             const imageData = canvas.toDataURL('image/png');
             chart.destroy();
@@ -1578,6 +1405,7 @@ async function createChartImage(config, width = 1000, height = 500) {
     });
 }
 
+// PDF GENERATION - STILE PROFESSIONALE COME DA IMMAGINI
 document.getElementById('generatePdfBtn').addEventListener('click', async function() {
     if(!currentData || currentData.length === 0){
         alert('⚠️ Nessun dato da esportare!');
@@ -1597,6 +1425,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         const minDate = currentData.map(r => r.date).filter(Boolean).sort()[0] || 'N/A';
         const maxDate = currentData.map(r => r.date).filter(Boolean).sort().reverse()[0] || 'N/A';
         
+        // Funzione per aggiungere header blu
         function addHeader(pageNum) {
             pdf.setFillColor(41, 98, 255);
             pdf.rect(0, 0, pageWidth, 50, 'F');
@@ -1606,6 +1435,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
             pdf.text('ANALISI CAMPAGNE PHISHING', margin, 32);
         }
         
+        // Funzione per aggiungere footer
         function addFooter(pageNum, totalPages) {
             pdf.setTextColor(150, 150, 150);
             pdf.setFontSize(9);
@@ -1613,6 +1443,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
             pdf.text(`Report generato il ${today}`, pageWidth - margin, pageHeight - 20, { align: 'right' });
         }
 
+        // ==================== PAGINA 1: DATI ESECUTIVI ====================
         addHeader(1);
         
         pdf.setTextColor(80, 80, 80);
@@ -1623,6 +1454,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         pdf.setFontSize(10);
         pdf.text(`Periodo di riferimento: dal ${formatDateForDisplay(minDate)} al ${formatDateForDisplay(maxDate)}`, margin, 88);
         
+        // DATI ESECUTIVI - Box metriche in orizzontale
         pdf.setFont('Helvetica', 'bold');
         pdf.setFontSize(12);
         pdf.setTextColor(0, 0, 0);
@@ -1634,6 +1466,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         const intro = `Nel periodo analizzato sono state rilevate ${currentData.length} campagne di phishing attive, distribuite su diversi settori e con obiettivi differenti. L'analisi ha individuato pattern di attacco ricorrenti e tendenze significative.`;
         pdf.text(intro, margin, 140, { maxWidth: pageWidth - 2*margin, lineHeightFactor: 1.5 });
         
+        // Box metriche colorati orizzontali
         const uniqueDomains = new Set(currentData.map(r => r.site)).size;
         const uniqueSectors = new Set(currentData.map(r => r.sector)).size;
         const uniqueGoals = new Set(currentData.map(r => r.goal)).size;
@@ -1650,14 +1483,17 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         const yPos = 190;
         
         metrics.forEach((m, idx) => {
+            // Box colorato
             pdf.setFillColor(m.color[0], m.color[1], m.color[2]);
             pdf.roundedRect(xPos, yPos, boxWidth, 70, 3, 3, 'F');
             
+            // Valore grande
             pdf.setTextColor(255, 255, 255);
             pdf.setFont('Helvetica', 'bold');
             pdf.setFontSize(24);
             pdf.text(m.value.toString(), xPos + boxWidth/2, yPos + 35, { align: 'center' });
             
+            // Label
             pdf.setFontSize(9);
             pdf.setFont('Helvetica', 'normal');
             pdf.text(m.label, xPos + boxWidth/2, yPos + 55, { align: 'center' });
@@ -1665,6 +1501,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
             xPos += boxWidth + 10;
         });
         
+        // I 5 SETTORI PIÙ COLPITI
         pdf.setFont('Helvetica', 'bold');
         pdf.setFontSize(12);
         pdf.setTextColor(0, 0, 0);
@@ -1712,6 +1549,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         
         addFooter(1, 3);
         
+        // ==================== PAGINA 2: ANALISI TEMPORALE ====================
         pdf.addPage();
         addHeader(2);
         
@@ -1782,6 +1620,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         const timeDesc = 'Il grafico mostra l\'andamento temporale delle campagne di phishing rilevate. È possibile osservare i picchi di attività e identificare pattern stagionali o trend in aumento/diminuzione.';
         pdf.text(timeDesc, margin, 295, {maxWidth: pageWidth - 2*margin, lineHeightFactor: 1.5});
         
+        // EVOLUZIONE PER SETTORE
         pdf.setFont('Helvetica', 'bold');
         pdf.setFontSize(12);
         pdf.setTextColor(0, 0, 0);
@@ -1869,6 +1708,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         
         addFooter(2, 3);
         
+        // ==================== PAGINA 3: OBIETTIVI DEGLI ATTACCHI ====================
         pdf.addPage();
         addHeader(3);
         
@@ -1921,6 +1761,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
         
         addFooter(3, 3);
         
+        // Salva PDF
         pdf.save(`Phishing_Report_${today.replace(/\//g,'-')}.pdf`);
 
     } catch(error) {
@@ -1931,39 +1772,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
     }
 });
 
-// AUTO LOAD CSV ON PAGE LOAD
-document.addEventListener('DOMContentLoaded', function () {
-    const csvPath = 'https://github.com/nimeo1988/social-dashboard/raw/main/data/dati.csv';
-    // alternativa equivalente:
-    // const csvPath = 'https://raw.githubusercontent.com/nimeo1988/social-dashboard/main/data/dati.csv';
-
-    fetch(csvPath)
-        .then(response => response.text())
-        .then(text => {
-            console.log(text); // qui parserei il CSV
-        })
-        .catch(err => console.error('Errore nel caricamento CSV:', err));
-});
-
-    
-    fetch(csvPath)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('CSV file not found at ' + csvPath);
-            }
-            return response.text();
-        })
-        .then(text => {
-            const file = new File([text], 'dati.csv', { type: 'text/csv' });
-            handleFile(file);
-        })
-        .catch(err => {
-            console.warn('⚠️ Auto-load fallito: ' + err.message);
-            console.log('📁 Carica CSV da: /social-dashboard/data/dati.csv');
-        });
-});
-
 </script>
 
-</script></body>
+</body>
 </html>
