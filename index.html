@@ -648,13 +648,24 @@ h1 {
     </div>
 </div>
 
-<div class="charts-grid-two-cols" id="chartsGridMonthAndGoals" style="display:none;">
+<div class="charts-grid-two-cols" id="chartsGridTimelineMain" style="display:none;">
     <div class="chart-card">
-        <h3>Analisi temporale</h3>
+        <h3>Attacchi Temporali - Trend Mensile</h3>
         <div class="chart-wrapper"><canvas id="monthChart"></canvas></div>
     </div>
     <div class="chart-card">
-        <h3>Evoluzione per settore</h3>
+        <h3>Attack Goals - Evoluzione Temporale</h3>
+        <div class="chart-wrapper"><canvas id="attackGoalsTimeChart"></canvas></div>
+    </div>
+</div>
+
+<div class="charts-grid-two-cols" id="chartsGridMonthAndGoals" style="display:none;">
+    <div class="chart-card">
+        <h3>Distribuzione per Obiettivi</h3>
+        <div class="chart-wrapper"><canvas id="goalsTimelineChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+        <h3>Evoluzione per Settore</h3>
         <div class="chart-wrapper"><canvas id="goalsByMonthChart"></canvas></div>
     </div>
 </div>
@@ -674,7 +685,7 @@ h1 {
 </div>
 
 <script>
-let allSectorsChart, top5SectorsBarChart, goalsPieChart, monthChart, goalsByMonthChart;
+let allSectorsChart, top5SectorsBarChart, goalsPieChart, monthChart, goalsByMonthChart, goalsTimelineChart, attackGoalsTimeChart;
 let currentData = [];
 let filteredData = [];
 let currentPage = 1;
@@ -942,6 +953,7 @@ function changePage(page) {
     const tableContainer = document.getElementById('tableContainer');
     const chartsGridSectors = document.getElementById('chartsGridSectors');
     const chartsGridGoalsPie = document.getElementById('chartsGridGoalsPie');
+    const chartsGridTimelineMain = document.getElementById('chartsGridTimelineMain');
     const chartsGridMonthAndGoals = document.getElementById('chartsGridMonthAndGoals');
     
     // Nascondi tutto
@@ -949,10 +961,12 @@ function changePage(page) {
     tableContainer.style.display = 'none';
     chartsGridSectors.style.display = 'none';
     chartsGridGoalsPie.style.display = 'none';
+    chartsGridTimelineMain.style.display = 'none';
     chartsGridMonthAndGoals.style.display = 'none';
     
     chartsGridSectors.classList.remove('active');
     chartsGridGoalsPie.classList.remove('active');
+    chartsGridTimelineMain.classList.remove('active');
     chartsGridMonthAndGoals.classList.remove('active');
     
     // Mostra la pagina selezionata
@@ -970,6 +984,8 @@ function changePage(page) {
             setTimeout(() => chartsGridGoalsPie.classList.add('active'), 50);
             break;
         case 'timeline':
+            chartsGridTimelineMain.style.display = 'grid';
+            setTimeout(() => chartsGridTimelineMain.classList.add('active'), 50);
             chartsGridMonthAndGoals.style.display = 'grid';
             setTimeout(() => chartsGridMonthAndGoals.classList.add('active'), 50);
             break;
@@ -1141,28 +1157,44 @@ function updateAllCharts(data) {
     const showMonthChart = !isLessThanMonth;
     const showGoalsByMonth = !goalFilter;
     
+    const chartsGridTimelineMain = document.getElementById('chartsGridTimelineMain');
     const chartsGridMonthAndGoals = document.getElementById('chartsGridMonthAndGoals');
     
-    if((showMonthChart || showGoalsByMonth) && currentPage === 'timeline') {
-        chartsGridMonthAndGoals.style.display = 'grid';
-        chartsGridMonthAndGoals.classList.add('active');
-        
+    if(currentPage === 'timeline') {
+        // Riga superiore: Attacchi Temporali + Distribuzione Obiettivi
         if(showMonthChart) {
+            chartsGridTimelineMain.style.display = 'grid';
+            chartsGridTimelineMain.classList.add('active');
             updateMonthChart(data);
+            updateGoalsTimelineChart(data);
         } else {
+            chartsGridTimelineMain.style.display = 'none';
+            chartsGridTimelineMain.classList.remove('active');
             if(monthChart) monthChart.destroy();
+            if(goalsTimelineChart) goalsTimelineChart.destroy();
         }
         
+        // Riga inferiore: Evoluzione Settore + Attack Goals
         if(showGoalsByMonth) {
+            chartsGridMonthAndGoals.style.display = 'grid';
+            chartsGridMonthAndGoals.classList.add('active');
             updateGoalsByMonthChart(data);
+            updateAttackGoalsTimeChart(data);
         } else {
+            chartsGridMonthAndGoals.style.display = 'none';
+            chartsGridMonthAndGoals.classList.remove('active');
             if(goalsByMonthChart) goalsByMonthChart.destroy();
+            if(attackGoalsTimeChart) attackGoalsTimeChart.destroy();
         }
     } else {
+        chartsGridTimelineMain.style.display = 'none';
+        chartsGridTimelineMain.classList.remove('active');
         chartsGridMonthAndGoals.style.display = 'none';
         chartsGridMonthAndGoals.classList.remove('active');
         if(monthChart) monthChart.destroy();
         if(goalsByMonthChart) goalsByMonthChart.destroy();
+        if(goalsTimelineChart) goalsTimelineChart.destroy();
+        if(attackGoalsTimeChart) attackGoalsTimeChart.destroy();
     }
 }
 
@@ -1533,6 +1565,172 @@ function updateGoalsByMonthChart(data){
                         stepSize: 10
                     },
                     grid: { 
+                        color: 'rgba(168,178,193,0.1)'
+                    }
+                }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
+            }
+        }
+    });
+}
+
+// NUOVI GRAFICI PER ANALISI OBIETTIVI TEMPORALE
+
+function updateGoalsTimelineChart(data){
+    if(goalsTimelineChart) goalsTimelineChart.destroy();
+    
+    const goals = {};
+    data.forEach(r => {
+        if(r.goal) goals[r.goal] = (goals[r.goal] || 0) + 1;
+    });
+    const sorted = Object.entries(goals).sort((a,b) => b[1] - a[1]);
+    
+    const dynamicColors = sorted.map((_, idx) => colors[idx % colors.length]);
+    
+    goalsTimelineChart = new Chart(document.getElementById('goalsTimelineChart'), {
+        type: 'bar',
+        data: {
+            labels: sorted.map(([k]) => k),
+            datasets: [{
+                label: 'Numero Attacchi',
+                data: sorted.map(([_,v]) => v),
+                backgroundColor: dynamicColors,
+                borderWidth: 0,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {display: false},
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.85)',
+                    titleColor: '#FFFFFF',
+                    bodyColor: '#FFFFFF',
+                    cornerRadius: 6,
+                    padding: 10
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {color: '#a8b2c1', font: {size: 10}},
+                    grid: {color: 'rgba(168,178,193,0.1)'}
+                },
+                y: {
+                    ticks: {color: '#a8b2c1', font: {size: 10}},
+                    grid: {display: false}
+                }
+            }
+        }
+    });
+}
+
+function updateAttackGoalsTimeChart(data){
+    if(attackGoalsTimeChart) attackGoalsTimeChart.destroy();
+    
+    const monthGoalMap = {};
+    data.forEach(r => {
+        if(r.date && r.date.length >= 7 && r.goal) {
+            const month = r.date.slice(0, 7);
+            if(month.match(/^\d{4}-\d{2}$/)) {
+                if(!monthGoalMap[month]) monthGoalMap[month] = {};
+                monthGoalMap[month][r.goal] = (monthGoalMap[month][r.goal] || 0) + 1;
+            }
+        }
+    });
+    
+    const sortedMonths = Object.keys(monthGoalMap).sort();
+    const goalCounts = {};
+    data.forEach(r => {
+        if(r.goal) goalCounts[r.goal] = (goalCounts[r.goal] || 0) + 1;
+    });
+    const topGoals = Object.entries(goalCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([g]) => g);
+    
+    const lineColors = ['#2962FF', '#F44336', '#4CAF50', '#FF9800', '#9C27B0'];
+    
+    const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
+    const monthLabels = sortedMonths.map(m => {
+        const [year, month] = m.split('-');
+        const monthIdx = parseInt(month) - 1;
+        if(monthIdx >= 0 && monthIdx < 12) {
+            return `${monthNames[monthIdx]} ${year}`;
+        }
+        return m;
+    });
+    
+    const datasets = topGoals.map((goal, idx) => ({
+        label: goal,
+        data: sortedMonths.map(month => monthGoalMap[month][goal] || 0),
+        borderColor: lineColors[idx % lineColors.length],
+        backgroundColor: 'transparent',
+        borderWidth: 2.5,
+        fill: false,
+        tension: 0.4,
+        pointRadius: 4,
+        pointBackgroundColor: lineColors[idx % lineColors.length],
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1.5,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: lineColors[idx % lineColors.length],
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2
+    }));
+    
+    attackGoalsTimeChart = new Chart(document.getElementById('attackGoalsTimeChart'), {
+        type: 'line',
+        data: {
+            labels: monthLabels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#a8b2c1',
+                        font: {size: 9},
+                        padding: 8,
+                        boxWidth: 15
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.85)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    cornerRadius: 6,
+                    padding: 10,
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#a8b2c1',
+                        font: {size: 9},
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                    grid: {
+                        display: true,
+                        color: 'rgba(168,178,193,0.05)'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#a8b2c1',
+                        font: {size: 10}
+                    },
+                    grid: {
                         color: 'rgba(168,178,193,0.1)'
                     }
                 }
