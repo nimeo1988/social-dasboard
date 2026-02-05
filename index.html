@@ -462,18 +462,6 @@ h1 {
     <div class="subtitle">Phishing Sites & Human Attack Surface</div>
 </header>
 
-<div class="upload-section">
-    <h2>UPLOAD CSV DATA</h2>
-    <div class="upload-area" id="uploadArea">
-        <div class="upload-icon">📊</div>
-        <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
-        <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
-        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
-    </div>
-    <div id="fileInfo" class="file-info"></div>
-    <div id="errorMsg" class="error-msg"></div>
-</div>
-
 <div class="table-container" id="tableContainer">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
         <div class="date-input-wrapper">
@@ -671,7 +659,41 @@ document.addEventListener('keydown', function(event) {
 function parseItalianDate(dateStr) {
     if (!dateStr || dateStr.trim() === '') return '';
     
-    const datePart = dateStr.trim().split(' ')[0];
+    const trimmed = dateStr.trim();
+    
+    // Se è nel formato ISO (2026-02-05 o 2026-02-05 08:55:04)
+    if (trimmed.match(/^\d{4}-\d{2}-\d{2}/)) {
+        // Estrai la data e opzionalmente l'orario
+        const parts = trimmed.split(' ');
+        const datePart = parts[0]; // 2026-02-05
+        const timePart = parts[1] || ''; // 08:55:04 (opzionale)
+        
+        const dateParts = datePart.split('-');
+        
+        if (dateParts.length === 3) {
+            const year = dateParts[0].trim();
+            const month = dateParts[1].trim();
+            const day = dateParts[2].trim();
+            
+            // Validazione base
+            const dayNum = parseInt(day);
+            const monthNum = parseInt(month);
+            const yearNum = parseInt(year);
+            
+            if (dayNum >= 1 && dayNum <= 31 && 
+                monthNum >= 1 && monthNum <= 12 && 
+                yearNum >= 1900 && yearNum <= 2100) {
+                // Ritorna data + ora se presente
+                if (timePart) {
+                    return `${year}-${month}-${day} ${timePart}`;
+                }
+                return `${year}-${month}-${day}`;
+            }
+        }
+    }
+    
+    // Se è nel formato italiano (dd/mm/yyyy)
+    const datePart = trimmed.split(' ')[0];
     const parts = datePart.split('/');
     
     if (parts.length === 3) {
@@ -679,6 +701,7 @@ function parseItalianDate(dateStr) {
         const month = parts[1].trim().padStart(2, '0');
         const year = parts[2].trim();
         
+        // Validazione base
         const dayNum = parseInt(day);
         const monthNum = parseInt(month);
         const yearNum = parseInt(year);
@@ -901,11 +924,24 @@ document.getElementById('nextBtn').onclick = () => {
 };
 
 function formatDateForDisplay(isoDate) {
+    // Converte yyyy-mm-dd o yyyy-mm-dd HH:MM:SS in dd/mm/yyyy HH:MM:SS
     if (!isoDate || isoDate.length < 10) return '-';
     
-    const parts = isoDate.split('-');
-    if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    // Separa data e ora
+    const parts = isoDate.split(' ');
+    const datePart = parts[0]; // yyyy-mm-dd
+    const timePart = parts[1] || ''; // HH:MM:SS (opzionale)
+    
+    const dateParts = datePart.split('-');
+    if (dateParts.length === 3) {
+        const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+        
+        // Se c'è l'orario, aggiungilo
+        if (timePart) {
+            return `${formattedDate} ${timePart}`;
+        }
+        
+        return formattedDate;
     }
     
     return isoDate;
@@ -1937,7 +1973,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 
 // AUTO LOAD CSV ON PAGE LOAD
 document.addEventListener('DOMContentLoaded', function() {
-    const csvPath = 'data/dati.csv';
+    const csvPath = '/social-dashboard/data/dati.csv';
     
     fetch(csvPath)
         .then(response => {
@@ -1958,23 +1994,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </script>
 
-// ===== AUTO LOAD CSV =====
-document.addEventListener("DOMContentLoaded", () => {
-    const csvPath = "data/dati.csv";
-
-    fetch(csvPath)
-        .then(response => {
-            if (!response.ok) throw new Error("CSV non trovato");
-            return response.text();
-        })
-        .then(text => {
-            const file = new File([text], "dati.csv", { type: "text/csv" });
-            handleFile(file);
-        })
-        .catch(err => {
-            console.error(err);
-            errorMsg.textContent = "⚠️ Impossibile caricare data/dati.csv";
-        });
-});
-
-</script>
+</body>
+</html>
