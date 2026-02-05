@@ -1925,24 +1925,33 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 });
 
 // AUTO LOAD CSV ON PAGE LOAD
-document.addEventListener('DOMContentLoaded', function() {
-    const csvPath = 'data/dati.csv';
-    
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const csvPath = "data/dati.csv"; // percorso del tuo CSV
+
     fetch(csvPath)
         .then(response => {
-            if (!response.ok) {
-                throw new Error('CSV file not found at ' + csvPath);
-            }
+            if (!response.ok) throw new Error("CSV non trovato");
             return response.text();
         })
         .then(text => {
-            const file = new File([text], 'dati.csv', { type: 'text/csv' });
-            handleFile(file);
+            console.log("✅ CSV caricato correttamente!");
+            // Creiamo un file virtuale da passare a handleFile
+            const file = new File([text], "dati.csv", { type: "text/csv" });
+            if (typeof handleFile === "function") {
+                handleFile(file);
+            } else {
+                console.warn("⚠️ handleFile non è definita. Controlla l'ordine degli script.");
+            }
         })
         .catch(err => {
-            console.warn('⚠️ Auto-load fallito: ' + err.message);
-            console.log('📁 Carica manualmente un file CSV per iniziare');
+            console.error("❌ Errore caricamento CSV:", err);
+            const errorMsg = document.getElementById("errorMsg");
+            if (errorMsg) {
+                errorMsg.textContent = "⚠️ Impossibile caricare data/dati.csv";
+            }
         });
 });
+</script>
 
 </script>
