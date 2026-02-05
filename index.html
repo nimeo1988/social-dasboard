@@ -656,6 +656,32 @@ function showImage(imagePath) {
     const modalImg = document.getElementById('modalImage');
     modal.style.display = 'flex';
     modalImg.src = imagePath;
+
+    function populateTable(data) {
+    const tbody = document.querySelector('#dataTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    data.forEach(r => {
+        const tr = document.createElement('tr');
+
+        const site = r.site || '-';
+        const date = r.date || '-';
+        const sector = r.sector || '-';
+        const goal = r.goal || '-';
+        const screenshot = r.screenshot || '';
+
+        tr.innerHTML = `
+            <td>${site}</td>
+            <td>${date}</td>
+            <td>${sector}</td>
+            <td>${goal}</td>
+            <td>${screenshot ? `<img src="${screenshot}" width="80">` : '-'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
 }
 
 function closeModal() {
