@@ -1932,8 +1932,19 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 });
 
 // AUTO LOAD CSV ON PAGE LOAD
-document.addEventListener('DOMContentLoaded', function() {
-    const csvPath = 'https://github.com/nimeo1988/social-dashboard/blob/main/data/dati.csv';
+document.addEventListener('DOMContentLoaded', function () {
+    const csvPath = 'https://github.com/nimeo1988/social-dashboard/raw/main/data/dati.csv';
+    // alternativa equivalente:
+    // const csvPath = 'https://raw.githubusercontent.com/nimeo1988/social-dashboard/main/data/dati.csv';
+
+    fetch(csvPath)
+        .then(response => response.text())
+        .then(text => {
+            console.log(text); // qui parserei il CSV
+        })
+        .catch(err => console.error('Errore nel caricamento CSV:', err));
+});
+
     
     fetch(csvPath)
         .then(response => {
