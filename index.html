@@ -462,6 +462,18 @@ h1 {
     <div class="subtitle">Phishing Sites & Human Attack Surface</div>
 </header>
 
+<div class="upload-section">
+    <h2>UPLOAD CSV DATA</h2>
+    <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📊</div>
+        <p style="font-size:1.1rem;margin-bottom:.5rem">Click to upload CSV file</p>
+        <p style="color:#8b95a5;margin-bottom:1rem">or drag & drop here</p>
+        <input type="file" id="fileInput" class="file-input" accept=".csv,.tsv,.txt">
+    </div>
+    <div id="fileInfo" class="file-info"></div>
+    <div id="errorMsg" class="error-msg"></div>
+</div>
+
 <div class="table-container" id="tableContainer">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
         <div class="date-input-wrapper">
@@ -607,6 +619,14 @@ dateEndFilter.addEventListener('change', function() {
             this.style.borderColor = '';
         }, 1000);
     }
+});
+
+uploadArea.onclick = () => fileInput.click();
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
 
 uploadArea.addEventListener('dragleave', () => {
     uploadArea.classList.remove('dragover');
@@ -650,32 +670,23 @@ document.addEventListener('keydown', function(event) {
 
 function parseItalianDate(dateStr) {
     if (!dateStr || dateStr.trim() === '') return '';
-
-    const clean = dateStr.trim();
-
-    // FORMATO: YYYY-MM-DD HH:mm:ss  (es. 2026-02-03 10:31:31)
-    const isoMatch = clean.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+\d{2}:\d{2}:\d{2})?$/);
-    if (isoMatch) {
-        const [, year, month, day] = isoMatch;
-        return `${year}-${month}-${day}`;
-    }
-
-    // FORMATO: DD/MM/YYYY
-    const parts = clean.split(' ')[0].split('/');
+    
+    const datePart = dateStr.trim().split(' ')[0];
+    const parts = datePart.split('/');
+    
     if (parts.length === 3) {
-        const day = parts[0].padStart(2, '0');
-        const month = parts[1].padStart(2, '0');
-        const year = parts[2];
-
-        const d = parseInt(day), m = parseInt(month), y = parseInt(year);
-        if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2100) {
+        const day = parts[0].trim().padStart(2, '0');
+        const month = parts[1].trim().padStart(2, '0');
+        const year = parts[2].trim();
+        
+        const dayNum = parseInt(day);
+        const monthNum = parseInt(month);
+        const yearNum = parseInt(year);
+        
+        if (dayNum >= 1 && dayNum <= 31 && 
+            monthNum >= 1 && monthNum <= 12 && 
+            yearNum >= 1900 && yearNum <= 2100) {
             return `${year}-${month}-${day}`;
-        }
-    }
-
-    return '';
-}
-
         }
     }
     
@@ -1925,48 +1936,31 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 });
 
 // AUTO LOAD CSV ON PAGE LOAD
-<script>
-    <script>
-function handleFile(file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const text = e.target.result;
-        console.log("Contenuto CSV:", text);
-
-        // Qui puoi convertire il CSV in array di oggetti, se vuoi
-        const rows = text.split('\n').map(r => r.split(','));
-        console.log("CSV in array:", rows);
-
-        // Qui puoi chiamare le funzioni dei grafici, ad esempio:
-        // updateMonthChart(rows);
-        // updateGoalsPieChart(rows);
-    };
-    reader.readAsText(file);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const csvPath = "https://raw.githubusercontent.com/nimeo1988/social-dashboard/main/data/dati.csv";
-
+document.addEventListener('DOMContentLoaded', function() {
+    const csvPath = 'data/dati.csv';
+    
     fetch(csvPath)
         .then(response => {
-            if (!response.ok) throw new Error("CSV non trovato");
+            if (!response.ok) {
+                throw new Error('CSV file not found at ' + csvPath);
+            }
             return response.text();
         })
         .then(text => {
-            console.log("CSV caricato correttamente!");
-            const file = new File([text], "dati.csv", { type: "text/csv" });
-            handleFile(file); // <-- ora funziona
+            const file = new File([text], 'dati.csv', { type: 'text/csv' });
+            handleFile(file);
         })
         .catch(err => {
-            console.error("Errore caricamento CSV:", err);
-            const errorMsg = document.getElementById("errorMsg");
-            if (errorMsg) errorMsg.textContent = "⚠️ Impossibile caricare CSV da GitHub";
+            console.warn('⚠️ Auto-load fallito: ' + err.message);
+            console.log('📁 Carica manualmente un file CSV per iniziare');
         });
 });
+
 </script>
 
+// ===== AUTO LOAD CSV =====
 document.addEventListener("DOMContentLoaded", () => {
-    const csvPath = "https://raw.githubusercontent.com/nimeo1988/social-dashboard/main/data/dati.csv";
+    const csvPath = "data/dati.csv";
 
     fetch(csvPath)
         .then(response => {
@@ -1974,17 +1968,13 @@ document.addEventListener("DOMContentLoaded", () => {
             return response.text();
         })
         .then(text => {
-            console.log("CSV caricato correttamente!");
             const file = new File([text], "dati.csv", { type: "text/csv" });
             handleFile(file);
         })
         .catch(err => {
-            console.error("Errore caricamento CSV:", err);
-            const errorMsg = document.getElementById("errorMsg");
-            if (errorMsg) errorMsg.textContent = "⚠️ Impossibile caricare CSV da GitHub";
+            console.error(err);
+            errorMsg.textContent = "⚠️ Impossibile caricare data/dati.csv";
         });
 });
-
-</script>
 
 </script>
