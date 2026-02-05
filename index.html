@@ -670,23 +670,32 @@ document.addEventListener('keydown', function(event) {
 
 function parseItalianDate(dateStr) {
     if (!dateStr || dateStr.trim() === '') return '';
-    
-    const datePart = dateStr.trim().split(' ')[0];
-    const parts = datePart.split('/');
-    
+
+    const clean = dateStr.trim();
+
+    // FORMATO: YYYY-MM-DD HH:mm:ss  (es. 2026-02-03 10:31:31)
+    const isoMatch = clean.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+\d{2}:\d{2}:\d{2})?$/);
+    if (isoMatch) {
+        const [, year, month, day] = isoMatch;
+        return `${year}-${month}-${day}`;
+    }
+
+    // FORMATO: DD/MM/YYYY
+    const parts = clean.split(' ')[0].split('/');
     if (parts.length === 3) {
-        const day = parts[0].trim().padStart(2, '0');
-        const month = parts[1].trim().padStart(2, '0');
-        const year = parts[2].trim();
-        
-        const dayNum = parseInt(day);
-        const monthNum = parseInt(month);
-        const yearNum = parseInt(year);
-        
-        if (dayNum >= 1 && dayNum <= 31 && 
-            monthNum >= 1 && monthNum <= 12 && 
-            yearNum >= 1900 && yearNum <= 2100) {
+        const day = parts[0].padStart(2, '0');
+        const month = parts[1].padStart(2, '0');
+        const year = parts[2];
+
+        const d = parseInt(day), m = parseInt(month), y = parseInt(year);
+        if (d >= 1 && d <= 31 && m >= 1 && m <= 12 && y >= 1900 && y <= 2100) {
             return `${year}-${month}-${day}`;
+        }
+    }
+
+    return '';
+}
+
         }
     }
     
