@@ -741,6 +741,29 @@ function handleFile(file){
                 }
                 result.push(current.trim());
                 return result;
+                            // Ottieni intestazioni
+            const headers = parseCSVLine(lines[0], delimiter).map(h => h.toLowerCase());
+
+            // Trasforma righe in oggetti
+            const data = lines.slice(1).map(line => {
+                const cols = parseCSVLine(line, delimiter);
+                const obj = {};
+                headers.forEach((h, idx) => {
+                    obj[h] = cols[idx] || null; // null se la colonna manca
+                });
+                return obj;
+            });
+
+            console.log('CSV Parsed:', data);
+
+            // Aggiorna i grafici
+            updateMonthChart(data);
+            updateGoalsPieChart(data);
+            updateTop5SectorsBarChart(data);
+
+            // Aggiorna la tabella HTML
+            populateTable(data);
+
             }
             
             const headers = parseCSVLine(lines[0], delimiter);
