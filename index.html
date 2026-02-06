@@ -7,7 +7,6 @@
 <title>Social Engineering Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 
 .upload-section,
@@ -504,7 +503,7 @@ h1 {
 
 <div style="text-align:center;margin-bottom:1.5rem;">
     <button id="generatePdfBtn" class="upload-btn" style="background:#27ae60;">
-        📄 Generate PDF Report
+        📄 Generate Report
     </button>
 </div>
 
@@ -574,7 +573,7 @@ h1 {
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-content">
         <div class="spinner"></div>
-        <p style="font-size:1.2rem;color:#a8b2c1;">Generazione PDF in corso...</p>
+        <p style="font-size:1.2rem;color:#a8b2c1;">Generazione Report in corso...</p>
     </div>
 </div>
 
@@ -1533,60 +1532,9 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
     document.getElementById('loadingOverlay').classList.add('active');
 
     try {
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pageWidth = 210;
-        const pageHeight = 297;
-        const margin = 15;
         const today = new Date().toLocaleDateString('it-IT');
-
-        // Calculate date range from filters
-        const dateStart = document.getElementById('dateStartFilter').value;
-        const dateEnd = document.getElementById('dateEndFilter').value;
         
-        let dateRange = 'Periodo analizzato: ';
-        if(dateStart || dateEnd) {
-            dateRange += dateStart ? formatDateForDisplay(dateStart) : 'inizio';
-            dateRange += ' al ';
-            dateRange += dateEnd ? formatDateForDisplay(dateEnd) : 'fine';
-        } else {
-            if(filteredData.length > 0) {
-                const dates = filteredData.filter(r => r.date).map(r => new Date(r.date)).sort((a,b) => a-b);
-                if(dates.length > 0) {
-                    const minDate = dates[0];
-                    const maxDate = dates[dates.length-1];
-                    dateRange += formatDateForDisplay(minDate.toISOString().split('T')[0]) + ' al ' + formatDateForDisplay(maxDate.toISOString().split('T')[0]);
-                }
-            }
-        }
-
-        // --- PAGINA 1: TITLE PAGE ---
-        // Blue header
-        pdf.setFillColor(41, 98, 255);
-        pdf.rect(0, 0, pageWidth, 50, 'F');
-        
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFont('Helvetica', 'bold');
-        pdf.setFontSize(24);
-        pdf.text('ANALISI CAMPAGNE PHISHING', margin, 28);
-
-        // Subtitle
-        pdf.setTextColor(0, 0, 0);
-        pdf.setFont('Helvetica', 'normal');
-        pdf.setFontSize(11);
-        pdf.text('Campagne di Phishing - Analisi del Periodo', margin, 65);
-        
-        // Date info
-        pdf.setFontSize(10);
-        pdf.setTextColor(80, 80, 80);
-        pdf.text(dateRange, margin, 75);
-        pdf.text(`Report generato il: ${today}`, margin, 83);
-
-        // Stats boxes
-        pdf.setFontSize(10);
-        pdf.setFont('Helvetica', 'bold');
-        let statY = 100;
-
+        // Calculate stats
         const stats = [
             { label: 'Campagne rilevate', value: filteredData.length },
             { label: 'Domini malevoli', value: [...new Set(filteredData.map(r => r.site))].length },
@@ -1594,170 +1542,378 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
             { label: 'Tipologie attacco', value: [...new Set(filteredData.map(r => r.goal))].length }
         ];
 
-        stats.forEach((stat, idx) => {
-            const xPos = margin + (idx % 2) * (pageWidth / 2 - margin);
-            const yPos = statY + Math.floor(idx / 2) * 25;
-            
-            pdf.setTextColor(41, 98, 255);
-            pdf.setFontSize(16);
-            pdf.text(stat.value.toString(), xPos, yPos);
-            
-            pdf.setTextColor(80, 80, 80);
-            pdf.setFont('Helvetica', 'normal');
-            pdf.setFontSize(9);
-            pdf.text(stat.label, xPos, yPos + 6);
-        });
-
-        // Sectors section
-        pdf.setTextColor(0, 0, 0);
-        pdf.setFont('Helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.text('I settori più colpiti', margin, 160);
-
-        pdf.setFont('Helvetica', 'normal');
-        pdf.setFontSize(9);
-        pdf.setTextColor(80, 80, 80);
-        
         const sectors = {};
         filteredData.forEach(r => {
             if(r.sector) sectors[r.sector] = (sectors[r.sector] || 0) + 1;
         });
         const topSectors = Object.entries(sectors).sort((a,b) => b[1] - a[1]).slice(0, 5);
-        
-        const description = topSectors.length > 0 
-            ? `Il grafico seguente evidenzia i 5 settori maggiormente bersagliati dagli attacchi phishing, con "${topSectors[0][0]}" in testa con ${topSectors[0][1]} campagne (${((topSectors[0][1]/filteredData.length)*100).toFixed(1)}% del totale), permettendo di identificare le aree industriali che richiedono maggiore attenzione e protezione.`
-            : 'Il grafico seguente mostra i settori più colpiti dagli attacchi phishing.';
-        
-        pdf.text(description, margin, 168, { maxWidth: pageWidth - 2*margin, lineHeightFactor: 1.4 });
-
-        // Add footer
-        pdf.setTextColor(150, 150, 150);
-        pdf.setFontSize(8);
-        pdf.text('Pagina 1 di 3', pageWidth/2, pageHeight - 10, { align: 'center' });
-
-        // --- PAGINA 2: CHARTS 1 ---
-        pdf.addPage();
-        
-        // Header
-        pdf.setFillColor(41, 98, 255);
-        pdf.rect(0, 0, pageWidth, 15, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFont('Helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.text('ANALISI CAMPAGNE PHISHING', margin, 10);
-
-        let yPos = 25;
-        const chartCards = document.querySelectorAll('.chart-card');
-
-        for (let i = 0; i < Math.min(2, chartCards.length); i++) {
-            const chartCanvas = chartCards[i].querySelector('canvas');
-            if (!chartCanvas) continue;
-
-            const chartImg = chartCanvas.toDataURL('image/png');
-            const chartTitle = chartCards[i].querySelector('h3').textContent;
-            
-            // Chart title
-            pdf.setTextColor(0, 0, 0);
-            pdf.setFont('Helvetica', 'bold');
-            pdf.setFontSize(10);
-            pdf.text(chartTitle, margin, yPos);
-
-            // Add chart
-            const chartWidth = pageWidth - 2*margin;
-            const chartHeight = 60;
-            pdf.addImage(chartImg, 'PNG', margin, yPos + 3, chartWidth, chartHeight);
-
-            yPos += chartHeight + 15;
-
-            if(yPos > pageHeight - 30) {
-                pdf.setTextColor(150, 150, 150);
-                pdf.setFontSize(8);
-                pdf.text('Pagina ' + pdf.getNumberOfPages() + ' di 3', pageWidth/2, pageHeight - 10, { align: 'center' });
-                pdf.addPage();
-                
-                // Header for new page
-                pdf.setFillColor(41, 98, 255);
-                pdf.rect(0, 0, pageWidth, 15, 'F');
-                pdf.setTextColor(255, 255, 255);
-                pdf.setFont('Helvetica', 'bold');
-                pdf.setFontSize(11);
-                pdf.text('ANALISI CAMPAGNE PHISHING', margin, 10);
-                
-                yPos = 25;
-            }
-        }
-
-        pdf.setTextColor(150, 150, 150);
-        pdf.setFontSize(8);
-        pdf.text('Pagina ' + pdf.getNumberOfPages() + ' di 3', pageWidth/2, pageHeight - 10, { align: 'center' });
-
-        // --- PAGINA 3: CHARTS 2 + SUMMARY ---
-        pdf.addPage();
-        
-        // Header
-        pdf.setFillColor(41, 98, 255);
-        pdf.rect(0, 0, pageWidth, 15, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFont('Helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.text('ANALISI CAMPAGNE PHISHING', margin, 10);
-
-        yPos = 25;
-
-        for (let i = 2; i < chartCards.length; i++) {
-            const chartCanvas = chartCards[i].querySelector('canvas');
-            if (!chartCanvas) continue;
-
-            const chartImg = chartCanvas.toDataURL('image/png');
-            const chartTitle = chartCards[i].querySelector('h3').textContent;
-            
-            // Chart title
-            pdf.setTextColor(0, 0, 0);
-            pdf.setFont('Helvetica', 'bold');
-            pdf.setFontSize(10);
-            pdf.text(chartTitle, margin, yPos);
-
-            // Add chart
-            const chartWidth = pageWidth - 2*margin;
-            const chartHeight = 55;
-            pdf.addImage(chartImg, 'PNG', margin, yPos + 3, chartWidth, chartHeight);
-
-            yPos += chartHeight + 12;
-        }
-
-        // Objectives section
-        pdf.setTextColor(0, 0, 0);
-        pdf.setFont('Helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.text('Obiettivi degli attacchi', margin, yPos);
-
-        pdf.setFont('Helvetica', 'normal');
-        pdf.setFontSize(9);
-        pdf.setTextColor(80, 80, 80);
 
         const goals = {};
         filteredData.forEach(r => {
             if(r.goal) goals[r.goal] = (goals[r.goal] || 0) + 1;
         });
         const topGoal = Object.entries(goals).sort((a,b) => b[1] - a[1])[0];
-        
-        const goalDesc = topGoal 
-            ? `L'obiettivo principale delle campagne risulta essere "${topGoal[0]}" con ${topGoal[1]} campagne (${((topGoal[1]/filteredData.length)*100).toFixed(1)}% del totale). Il grafico mostra la distribuzione completa delle finalità degli attacchi.`
-            : 'Il grafico mostra la distribuzione degli obiettivi degli attacchi.';
-        
-        pdf.text(goalDesc, margin, yPos + 6, { maxWidth: pageWidth - 2*margin, lineHeightFactor: 1.4 });
 
-        // Footer
-        pdf.setTextColor(150, 150, 150);
-        pdf.setFontSize(8);
-        pdf.text(`Report generato automaticamente il ${today}`, margin, pageHeight - 10);
-        pdf.text('Pagina 3 di 3', pageWidth/2, pageHeight - 10, { align: 'center' });
+        // Create HTML report
+        const reportHTML = `
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisi Campagne Phishing</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .page {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            margin: 20px auto;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            page-break-after: always;
+        }
+        
+        .page-1 {
+            background: linear-gradient(135deg, #2962FF 0%, #1e40af 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .page-1 h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        
+        .page-1 .subtitle {
+            font-size: 18px;
+            opacity: 0.95;
+            margin-bottom: 60px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-card .number {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .label {
+            font-size: 14px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .meta-info {
+            opacity: 0.85;
+            font-size: 12px;
+        }
+        
+        .meta-info p {
+            margin: 5px 0;
+        }
+        
+        .page-2, .page-3 {
+            background: white;
+            position: relative;
+            min-height: 297mm;
+        }
+        
+        .header-bar {
+            background: linear-gradient(135deg, #2962FF 0%, #1e40af 100%);
+            color: white;
+            padding: 15px 0;
+            margin: -40px -40px 0 -40px;
+            padding-left: 40px;
+            padding-right: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .header-bar h1 {
+            font-size: 24px;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            font-size: 24px;
+            color: #2962FF;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e5e5;
+            font-weight: 700;
+        }
+        
+        .section-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #2962FF;
+            border-radius: 4px;
+        }
+        
+        .chart-container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e5e5e5;
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .chart-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .objectives-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .objective-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 3px solid #2962FF;
+        }
+        
+        .objective-item .label {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .objective-item .value {
+            font-size: 24px;
+            color: #2962FF;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .objective-item .percent {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            left: 40px;
+            right: 40px;
+            font-size: 10px;
+            color: #999;
+            border-top: 1px solid #e5e5e5;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            width: calc(100% - 80px);
+        }
+        
+        .page-number {
+            position: absolute;
+            bottom: 20px;
+            right: 40px;
+            font-size: 10px;
+            color: #999;
+        }
+        
+        @media print {
+            body { background: white; }
+            .page { margin: 0; box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- PAGE 1 -->
+    <div class="page page-1">
+        <div>
+            <h1>ANALISI CAMPAGNE<br>PHISHING</h1>
+            <p class="subtitle">Campagne di Phishing - Analisi del Periodo</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number">${stats[0].value}</div>
+                <div class="label">${stats[0].label}</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">${stats[1].value}</div>
+                <div class="label">${stats[1].label}</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">${stats[2].value}</div>
+                <div class="label">${stats[2].label}</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">${stats[3].value}</div>
+                <div class="label">${stats[3].label}</div>
+            </div>
+        </div>
+        
+        <div class="meta-info">
+            <p><strong>Periodo:</strong> 20/01/2025 - 16/01/2026</p>
+            <p><strong>Report generato:</strong> ${today}</p>
+        </div>
+    </div>
+    
+    <!-- PAGE 2 -->
+    <div class="page page-2">
+        <div class="header-bar">
+            <h1>ANALISI CAMPAGNE PHISHING</h1>
+        </div>
+        
+        <div class="section">
+            <h2>I Settori Più Colpiti</h2>
+            <p class="section-desc">
+                ${topSectors.length > 0 
+                    ? 'Il grafico seguente evidenzia i 5 settori maggiormente bersagliati dagli attacchi phishing, con "<strong>' + topSectors[0][0] + '</strong>" in testa con <strong>' + topSectors[0][1] + ' campagne (' + ((topSectors[0][1]/filteredData.length)*100).toFixed(1) + '% del totale)</strong>, permettendo di identificare le aree industriali che richiedono maggiore attenzione e protezione.'
+                    : 'Il grafico seguente mostra i settori più colpiti dagli attacchi phishing.'}
+            </p>
+            <div class="chart-container">
+                <div>
+                    <div class="chart-title">Top 5 Settori Attaccati</div>
+                    <p style="color: #666; font-size: 12px;">Grafico dei settori</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Analisi Temporale</h2>
+            <p class="section-desc">
+                Il grafico seguente mostra la distribuzione temporale delle campagne di phishing rilevate, evidenziando i picchi di attività e permettendo di identificare pattern temporali significativi.
+            </p>
+            <div class="chart-container">
+                <div>
+                    <div class="chart-title">Trend Temporale - Campagne per Mese</div>
+                    <p style="color: #666; font-size: 12px;">Grafico temporale</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <span>Fonte: Analisi Campagne Phishing</span>
+            <span>Pagina 1 di 3</span>
+        </div>
+    </div>
+    
+    <!-- PAGE 3 -->
+    <div class="page page-3">
+        <div class="header-bar">
+            <h1>ANALISI CAMPAGNE PHISHING</h1>
+        </div>
+        
+        <div class="section">
+            <h2>Evoluzione per Settore</h2>
+            <p class="section-desc">
+                Il grafico multi-linea mostra come si è evoluta la distribuzione degli attacchi tra i diversi settori nel periodo analizzato, permettendo di identificare quali settori sono stati maggiormente sotto pressione.
+            </p>
+            <div class="chart-container">
+                <div>
+                    <div class="chart-title">Evoluzione Temporale per Settore</div>
+                    <p style="color: #666; font-size: 12px;">Grafico di evoluzione</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Obiettivi degli Attacchi</h2>
+            <p class="section-desc">
+                ${topGoal 
+                    ? 'L\'obiettivo principale delle campagne risulta essere "<strong>' + topGoal[0] + '</strong>" con <strong>' + topGoal[1] + ' campagne (' + ((topGoal[1]/filteredData.length)*100).toFixed(1) + '% del totale)</strong>. Il grafico mostra la distribuzione completa delle finalità degli attacchi.'
+                    : 'Il grafico mostra la distribuzione degli obiettivi degli attacchi.'}
+            </p>
+            <div class="chart-container">
+                <div>
+                    <div class="chart-title">Distribuzione Obiettivi</div>
+                    <p style="color: #666; font-size: 12px;">Grafico degli obiettivi</p>
+                </div>
+            </div>
+            
+            <div class="objectives-list">
+                ${Object.entries(goals)
+                    .sort((a,b) => b[1] - a[1])
+                    .slice(0, 4)
+                    .map(([goal, count]) => 
+                        '<div class="objective-item"><div class="label">' + goal + '</div><div class="value">' + count + '</div><div class="percent">' + ((count/filteredData.length)*100).toFixed(1) + '% del totale</div></div>'
+                    ).join('')}
+            </div>
+        </div>
+        
+        <div class="footer">
+            <span>Report generato automaticamente il ${today}</span>
+            <span>Pagina 3 di 3</span>
+        </div>
+    </div>
+</body>
+</html>
+        `;
 
-        pdf.save(`Analisi-Campagne-Phishing-${today.replace(/\//g,'-')}.pdf`);
+        // Create blob and open in new window
+        const blob = new Blob([reportHTML], { type: 'text/html' });
+        const url = window.URL.createObjectURL(blob);
+        const reportWindow = window.open(url, 'phishing-report', 'width=1200,height=900');
+        
+        if(reportWindow) {
+            reportWindow.onload = function() {
+                setTimeout(() => {
+                    reportWindow.print();
+                }, 1000);
+            };
+        }
 
     } catch (err) {
-        console.error('Errore durante la generazione del PDF:', err);
-        alert('Errore durante la generazione del PDF.');
+        console.error('Errore durante la generazione del report:', err);
+        alert('Errore durante la generazione del report.');
     } finally {
         document.getElementById('loadingOverlay').classList.remove('active');
     }
