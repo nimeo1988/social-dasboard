@@ -1652,138 +1652,215 @@ async function createChartImage(config, width = 1000, height = 500) {
     });
 }
 
-document.getElementById('generatePdfBtn').addEventListener('click', async function() {
+document.getElementById('generatePdfBtn').addEventListener('click', async function () {
+
+    if (!filteredData || filteredData.length === 0) {
+        alert("Nessun dato disponibile per generare il report.");
+        return;
+    }
+
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    loadingOverlay.classList.add('active');
+
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const margin = 40;
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 50;
     let yPos = margin;
 
-    pdf.setFont('Helvetica');
+    pdf.setFont("Helvetica");
 
-    // ====== PAGINA 1 – COPERTINA =======
-    pdf.setFillColor(41, 98, 255);
-    pdf.rect(0, 0, pageWidth, 120, 'F');
-    
-    pdf.setTextColor('#ffffff');
-    pdf.setFontSize(32);
-    pdf.text('PHISHING CAMPAIGNS REPORT', pageWidth / 2, 80, { align: 'center' });
+    // =========================
+    // CALCOLO INSIGHT AUTOMATICI
+    // =========================
 
-    pdf.setFontSize(16);
-    pdf.text('Analisi delle campagne malevole', pageWidth / 2, 110, { align: 'center' });
+    const totalCampaigns = filteredData.length;
+    const uniqueSites = [...new Set(filteredData.map(r => r.site))].length;
+    const uniqueSectors = [...new Set(filteredData.map(r => r.sector))].length;
+    const uniqueGoals = [...new Set(filteredData.map(r => r.goal))].length;
 
-    pdf.setTextColor('#000000');
-    pdf.setFontSize(10);
-    pdf.text(`Data di generazione: ${new Date().toLocaleDateString()}`, margin, 160);
-    pdf.text(`Totale record filtrati: ${filteredData.length}`, margin, 180);
+    const sectorCount = {};
+    const goalCount = {};
+    const monthCount = {};
 
-    pdf.addPage();
-    yPos = margin;
-
-    // ====== PAGINA 2 – INDICE =======
-    pdf.setFontSize(14);
-    pdf.text('Indice', margin, yPos);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, yPos + 4, pageWidth - margin, yPos + 4);
-    
-    let sections = [
-        'Executive Summary',
-        'Statistiche principali',
-        'Distribuzione per settore',
-        'Distribuzione per obiettivo',
-        'Trend temporale',
-        'Analisi settori nel tempo',
-        'Conclusioni'
-    ];
-    
-    pdf.setFontSize(11);
-    sections.forEach((s, i) => {
-        pdf.text(`${i + 1}. ${s}`, margin + 10, yPos + 30 + (i * 20));
+    filteredData.forEach(r => {
+        if (r.sector) sectorCount[r.sector] = (sectorCount[r.sector] || 0) + 1;
+        if (r.goal) goalCount[r.goal] = (goalCount[r.goal] || 0) + 1;
+        if (r.date && r.date.length >= 7) {
+            const m = r.date.slice(0, 7);
+            monthCount[m] = (monthCount[m] || 0) + 1;
+        }
     });
 
+    const topSector = Object.entries(sectorCount).sort((a,b)=>b[1]-a[1])[0];
+    const topGoal = Object.entries(goalCount).sort((a,b)=>b[1]-a[1])[0];
+    const peakMonth = Object.entries(monthCount).sort((a,b)=>b[1]-a[1])[0];
+
+    // =========================
+    // COPERTINA
+    // =========================
+
+    pdf.setFillColor(20, 40, 90);
+    pdf.rect(0, 0, pageWidth, 160, "F");
+
+    pdf.setTextColor(255,255,255);
+    pdf.setFontSize(28);
+    pdf.text("REPORT ANALISI CAMPAGNE MALEVOLI", pageWidth/2, 90, {align:"center"});
+
+    pdf.setFontSize(14);
+    pdf.text("Social Engineering & Phishing Threat Landscape", pageWidth/2, 120, {align:"center"});
+
+    pdf.setTextColor(0,0,0);
+    pdf.setFontSize(10);
+    pdf.text(`Data generazione: ${new Date().toLocaleDateString()}`, margin, 200);
+
     pdf.addPage();
     yPos = margin;
 
-    // ====== EXECUTIVE SUMMARY =======
-    pdf.setFontSize(14);
-    pdf.text('1. Executive Summary', margin, yPos);
-    pdf.setFontSize(10);
+    // =========================
+    // EXECUTIVE SUMMARY
+    // =========================
+
+    pdf.setFontSize(16);
+    pdf.text("1. Executive Summary", margin, yPos);
+    yPos += 30;
+
+    pdf.setFontSize(11);
+
+    const summaryText = `
+Nel periodo analizzato sono state rilevate ${totalCampaigns} campagne malevole
+riconducibili a ${uniqueSites} siti distinti, con coinvolgimento di ${uniqueSectors} settori economici
+e ${uniqueGoals} differenti finalità di attacco.
+
+Il settore maggiormente colpito risulta ${topSector ? topSector[0] : "-"}
+(${topSector ? topSector[1] : 0} eventi), mentre l'obiettivo prevalente è
+${topGoal ? topGoal[0] : "-"}.
+
+Il picco di attività è stato registrato nel mese ${peakMonth ? peakMonth[0] : "-"}.
+`.trim();
+
+    pdf.text(summaryText, margin, yPos, {maxWidth: pageWidth - margin*2});
+
+    // =========================
+    // DISTRIBUZIONE SETTORI
+    // =========================
+
+    pdf.addPage();
+    yPos = margin;
+
+    pdf.setFontSize(16);
+    pdf.text("2. Distribuzione per Settore", margin, yPos);
     yPos += 25;
 
-    const summary = `
-Questo report fornisce una visione completa delle campagne di phishing incluse nel dataset analizzato.
-Totale campagne: ${filteredData.length}
-Numero siti unici: ${[...new Set(filteredData.map(r => r.site))].length}
-Numero settori unici: ${[...new Set(filteredData.map(r => r.sector))].length}
-    `.trim();
+    pdf.setFontSize(11);
 
-    pdf.text(summary, margin, yPos, { maxWidth: pageWidth - margin * 2 });
-    pdf.addPage();
-    yPos = margin;
+    const sectorText = `
+L'analisi evidenzia una concentrazione significativa delle campagne
+nel settore ${topSector ? topSector[0] : "-"}, suggerendo una
+strategia mirata verso ambiti ad elevato valore economico o reputazionale.
+`.trim();
 
-    // ====== DISTRIBUZIONE PER SETTORE (grafico) =======
-    pdf.setFontSize(14);
-    pdf.text('2. Distribuzione per settore', margin, yPos);
-    yPos += 30;
+    pdf.text(sectorText, margin, yPos, {maxWidth: pageWidth - margin*2});
+    yPos += 80;
 
-    const sectorChartImg = document.getElementById('allSectorsChart').toDataURL('image/png');
-    pdf.addImage(sectorChartImg, 'PNG', margin, yPos, pageWidth - margin * 2, 180);
+    const sectorImg = await createChartImage(allSectorsChart.config);
+    pdf.addImage(sectorImg, "PNG", margin, yPos, pageWidth - margin*2, 250);
 
-    pdf.addPage();
-    yPos = margin;
-
-    // ====== DISTRIBUZIONE PER OBIETTIVO (grafico) =======
-    pdf.setFontSize(14);
-    pdf.text('3. Distribuzione per obiettivo', margin, yPos);
-    yPos += 30;
-
-    const goalsChartImg = document.getElementById('goalsPieChart').toDataURL('image/png');
-    pdf.addImage(goalsChartImg, 'PNG', margin, yPos, pageWidth - margin * 2, 180);
+    // =========================
+    // DISTRIBUZIONE OBIETTIVI
+    // =========================
 
     pdf.addPage();
     yPos = margin;
 
-    // ====== TREND TEMPORALE (grafico) =======
-    pdf.setFontSize(14);
-    pdf.text('4. Trend temporale', margin, yPos);
-    yPos += 30;
-
-    const monthChartImg = document.getElementById('monthChart').toDataURL('image/png');
-    pdf.addImage(monthChartImg, 'PNG', margin, yPos, pageWidth - margin * 2, 180);
-
-    pdf.addPage();
-    yPos = margin;
-
-    // ====== ANALISI SETTORI NEL TEMPO (grafico) =======
-    pdf.setFontSize(14);
-    pdf.text('5. Analisi settori nel tempo', margin, yPos);
-    yPos += 30;
-
-    const goalsByMonthImg = document.getElementById('goalsByMonthChart').toDataURL('image/png');
-    pdf.addImage(goalsByMonthImg, 'PNG', margin, yPos, pageWidth - margin * 2, 180);
-
-    pdf.addPage();
-    yPos = margin;
-
-    // ====== CONCLUSIONI =======
-    pdf.setFontSize(14);
-    pdf.text('6. Conclusioni', margin, yPos);
+    pdf.setFontSize(16);
+    pdf.text("3. Distribuzione Obiettivi di Attacco", margin, yPos);
     yPos += 25;
-    
-    const conclusion = `
-Il report analizza le tendenze principali delle campagne malevole raccolte nel dataset.
-Il trend temporale, la distribuzione per settore e per obiettivo offrono
-una visione utile per sviluppare misure difensive e piani di mitigazione.
-    `.trim();
-    
-    pdf.setFontSize(10);
-    pdf.text(conclusion, margin, yPos, { maxWidth: pageWidth - margin * 2 });
 
-    // ====== FOOTER & SAVE =======
-    const reportName = `Report_Phishing_${new Date().toISOString().slice(0,10)}.pdf`;
-    pdf.save(reportName);
+    const goalText = `
+Le finalità di attacco risultano prevalentemente orientate a
+${topGoal ? topGoal[0] : "-"}, indicando una chiara
+propensione verso attività di sottrazione credenziali o frodi mirate.
+`.trim();
 
+    pdf.setFontSize(11);
+    pdf.text(goalText, margin, yPos, {maxWidth: pageWidth - margin*2});
+    yPos += 80;
+
+    const goalImg = await createChartImage(goalsPieChart.config);
+    pdf.addImage(goalImg, "PNG", margin, yPos, pageWidth - margin*2, 250);
+
+    // =========================
+    // TREND TEMPORALE
+    // =========================
+
+    pdf.addPage();
+    yPos = margin;
+
+    pdf.setFontSize(16);
+    pdf.text("4. Trend Temporale", margin, yPos);
+    yPos += 25;
+
+    const trendText = `
+L'analisi temporale mostra un andamento variabile delle campagne,
+con un picco nel mese ${peakMonth ? peakMonth[0] : "-"}.
+Il trend consente di identificare eventuali escalation
+o fasi di intensificazione delle attività malevole.
+`.trim();
+
+    pdf.setFontSize(11);
+    pdf.text(trendText, margin, yPos, {maxWidth: pageWidth - margin*2});
+    yPos += 80;
+
+    const monthImg = await createChartImage(monthChart.config);
+    pdf.addImage(monthImg, "PNG", margin, yPos, pageWidth - margin*2, 250);
+
+    // =========================
+    // CONCLUSIONI
+    // =========================
+
+    pdf.addPage();
+    yPos = margin;
+
+    pdf.setFontSize(16);
+    pdf.text("5. Conclusioni", margin, yPos);
+    yPos += 30;
+
+    const conclusionText = `
+I dati analizzati evidenziano una attività strutturata e mirata
+da parte degli attori malevoli.
+
+La concentrazione settoriale e la ripetitività degli obiettivi
+confermano la necessità di rafforzare le misure di prevenzione,
+monitoraggio e awareness.
+`.trim();
+
+    pdf.setFontSize(11);
+    pdf.text(conclusionText, margin, yPos, {maxWidth: pageWidth - margin*2});
+
+    // =========================
+    // FOOTER PAGINE
+    // =========================
+
+    const totalPages = pdf.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.text(
+            `Report Analisi Campagne Malevole - Pagina ${i} di ${totalPages}`,
+            pageWidth - margin,
+            pageHeight - 20,
+            {align: "right"}
+        );
+    }
+
+    pdf.save(`Report_SOC_${new Date().toISOString().slice(0,10)}.pdf`);
+
+    loadingOverlay.classList.remove('active');
 });
+
 
 
 
