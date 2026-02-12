@@ -1653,91 +1653,138 @@ async function createChartImage(config, width = 1000, height = 500) {
 }
 
 document.getElementById('generatePdfBtn').addEventListener('click', async function() {
-    document.getElementById('loadingOverlay').classList.add('active');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const margin = 40;
+    let yPos = margin;
 
-    try {
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'pt', 'a4');
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const margin = 40;
-        const today = new Date().toLocaleDateString('it-IT');
+    pdf.setFont('Helvetica');
 
-        // --- HEADER ---
-        function addHeader() {
-            pdf.setFillColor(41, 98, 255);
-            pdf.rect(0, 0, pageWidth, 50, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFont('Helvetica', 'bold');
-            pdf.setFontSize(18);
-            pdf.text('ANALISI CAMPAGNE PHISHING', margin, 32);
-        }
+    // ====== PAGINA 1 – COPERTINA =======
+    pdf.setFillColor(41, 98, 255);
+    pdf.rect(0, 0, pageWidth, 120, 'F');
+    
+    pdf.setTextColor('#ffffff');
+    pdf.setFontSize(32);
+    pdf.text('PHISHING CAMPAIGNS REPORT', pageWidth / 2, 80, { align: 'center' });
 
-        // --- FOOTER ---
-        function addFooter(pageNum, totalPages) {
-            pdf.setTextColor(150, 150, 150);
-            pdf.setFontSize(9);
-            pdf.text(`Pagina ${pageNum} di ${totalPages}`, pageWidth / 2, pageHeight - 20, { align: 'center' });
-            pdf.text(`Report generato il ${today}`, pageWidth - margin, pageHeight - 20, { align: 'right' });
-        }
+    pdf.setFontSize(16);
+    pdf.text('Analisi delle campagne malevole', pageWidth / 2, 110, { align: 'center' });
 
-        // --- PAGINA 1: INTRO ---
-        addHeader();
-        pdf.setTextColor(0, 0, 0);
-        pdf.setFont('Helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.text('Introduzione', margin, 70);
+    pdf.setTextColor('#000000');
+    pdf.setFontSize(10);
+    pdf.text(`Data di generazione: ${new Date().toLocaleDateString()}`, margin, 160);
+    pdf.text(`Totale record filtrati: ${filteredData.length}`, margin, 180);
 
-        pdf.setFont('Helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(80, 80, 80);
-        pdf.text(
-            'Questo report mostra i grafici della dashboard relativi alle campagne di phishing filtrate. ' +
-            'Ogni grafico è accompagnato da una breve spiegazione basata sui dati correnti.',
-            margin, 88, { maxWidth: pageWidth - 2 * margin, lineHeightFactor: 1.5 }
-        );
+    pdf.addPage();
+    yPos = margin;
 
-        // --- AGGIUNGI GRAFICI ---
-        const chartCards = document.querySelectorAll('.chart-card');
-        let yPos = 140;
+    // ====== PAGINA 2 – INDICE =======
+    pdf.setFontSize(14);
+    pdf.text('Indice', margin, yPos);
+    pdf.setLineWidth(0.5);
+    pdf.line(margin, yPos + 4, pageWidth - margin, yPos + 4);
+    
+    let sections = [
+        'Executive Summary',
+        'Statistiche principali',
+        'Distribuzione per settore',
+        'Distribuzione per obiettivo',
+        'Trend temporale',
+        'Analisi settori nel tempo',
+        'Conclusioni'
+    ];
+    
+    pdf.setFontSize(11);
+    sections.forEach((s, i) => {
+        pdf.text(`${i + 1}. ${s}`, margin + 10, yPos + 30 + (i * 20));
+    });
 
-        for (let i = 0; i < chartCards.length; i++) {
-            const chartCanvas = chartCards[i].querySelector('canvas');
-            if (!chartCanvas) continue;
+    pdf.addPage();
+    yPos = margin;
 
-            const chartImg = chartCanvas.toDataURL('image/png');
-            const chartHeight = 180;
-            pdf.addImage(chartImg, 'PNG', margin, yPos, pageWidth - 2 * margin, chartHeight);
+    // ====== EXECUTIVE SUMMARY =======
+    pdf.setFontSize(14);
+    pdf.text('1. Executive Summary', margin, yPos);
+    pdf.setFontSize(10);
+    yPos += 25;
 
-            // descrizione del grafico
-            const desc = chartCards[i].dataset.description || 'Descrizione non disponibile per questo grafico.';
-            pdf.setFont('Helvetica', 'normal');
-            pdf.setFontSize(9);
-            pdf.setTextColor(100, 100, 100);
-            pdf.text(desc, margin, yPos + chartHeight + 10, { maxWidth: pageWidth - 2 * margin, lineHeightFactor: 1.4 });
+    const summary = `
+Questo report fornisce una visione completa delle campagne di phishing incluse nel dataset analizzato.
+Totale campagne: ${filteredData.length}
+Numero siti unici: ${[...new Set(filteredData.map(r => r.site))].length}
+Numero settori unici: ${[...new Set(filteredData.map(r => r.sector))].length}
+    `.trim();
 
-            yPos += chartHeight + 40;
+    pdf.text(summary, margin, yPos, { maxWidth: pageWidth - margin * 2 });
+    pdf.addPage();
+    yPos = margin;
 
-            // aggiungi nuova pagina se serve
-            if (yPos + chartHeight + 60 > pageHeight) {
-                addFooter(pdf.getNumberOfPages(), pdf.getNumberOfPages());
-                pdf.addPage();
-                addHeader();
-                yPos = 70;
-            }
-        }
+    // ====== DISTRIBUZIONE PER SETTORE (grafico) =======
+    pdf.setFontSize(14);
+    pdf.text('2. Distribuzione per settore', margin, yPos);
+    yPos += 30;
 
-        addFooter(pdf.getNumberOfPages(), pdf.getNumberOfPages());
+    const sectorChartImg = document.getElementById('allSectorsChart').toDataURL('image/png');
+    pdf.addImage(sectorChartImg, 'PNG', margin, yPos, pageWidth - margin * 2, 180);
 
-        pdf.save(`Report_Campagne_${today.replace(/\//g,'-')}.pdf`);
+    pdf.addPage();
+    yPos = margin;
 
-    } catch (err) {
-        console.error('Errore durante la generazione del PDF:', err);
-        alert('Errore durante la generazione del PDF.');
-    } finally {
-        document.getElementById('loadingOverlay').classList.remove('active');
-    }
+    // ====== DISTRIBUZIONE PER OBIETTIVO (grafico) =======
+    pdf.setFontSize(14);
+    pdf.text('3. Distribuzione per obiettivo', margin, yPos);
+    yPos += 30;
+
+    const goalsChartImg = document.getElementById('goalsPieChart').toDataURL('image/png');
+    pdf.addImage(goalsChartImg, 'PNG', margin, yPos, pageWidth - margin * 2, 180);
+
+    pdf.addPage();
+    yPos = margin;
+
+    // ====== TREND TEMPORALE (grafico) =======
+    pdf.setFontSize(14);
+    pdf.text('4. Trend temporale', margin, yPos);
+    yPos += 30;
+
+    const monthChartImg = document.getElementById('monthChart').toDataURL('image/png');
+    pdf.addImage(monthChartImg, 'PNG', margin, yPos, pageWidth - margin * 2, 180);
+
+    pdf.addPage();
+    yPos = margin;
+
+    // ====== ANALISI SETTORI NEL TEMPO (grafico) =======
+    pdf.setFontSize(14);
+    pdf.text('5. Analisi settori nel tempo', margin, yPos);
+    yPos += 30;
+
+    const goalsByMonthImg = document.getElementById('goalsByMonthChart').toDataURL('image/png');
+    pdf.addImage(goalsByMonthImg, 'PNG', margin, yPos, pageWidth - margin * 2, 180);
+
+    pdf.addPage();
+    yPos = margin;
+
+    // ====== CONCLUSIONI =======
+    pdf.setFontSize(14);
+    pdf.text('6. Conclusioni', margin, yPos);
+    yPos += 25;
+    
+    const conclusion = `
+Il report analizza le tendenze principali delle campagne malevole raccolte nel dataset.
+Il trend temporale, la distribuzione per settore e per obiettivo offrono
+una visione utile per sviluppare misure difensive e piani di mitigazione.
+    `.trim();
+    
+    pdf.setFontSize(10);
+    pdf.text(conclusion, margin, yPos, { maxWidth: pageWidth - margin * 2 });
+
+    // ====== FOOTER & SAVE =======
+    const reportName = `Report_Phishing_${new Date().toISOString().slice(0,10)}.pdf`;
+    pdf.save(reportName);
+
 });
+
 
 
 // AUTO LOAD CSV ON PAGE LOAD
