@@ -531,17 +531,6 @@ h1 {
     </button>
 </div>
 
-    <thead>
-    <tr>
-        <th>Site</th>
-        <th>Date</th>
-        <th>Sector Attacked</th>
-        <th>Attack Goal</th>
-        <th>State</th> <!-- Nuova colonna -->
-        <th>Screenshot</th>
-    </tr>
-</thead>
-
 <table>
     <thead>
         <tr>
@@ -850,11 +839,9 @@ function handleFile(file){
             const headers = parseCSVLine(lines[0], delimiter);
             console.log('Headers found:', headers);
             
-            let stateIdx = -1;
-let siteIdx = -1, dateIdx = -1, sectorIdx = -1, goalIdx = -1, screenshotIdx = -1;
+            let siteIdx = -1, dateIdx = -1, sectorIdx = -1, goalIdx = -1, screenshotIdx = -1;
             headers.forEach((h, i) => {
                 const lower = h.toLowerCase().trim();
-                if(lower.includes('state')) stateIdx = i;
                 if(lower.includes('site') || lower.includes('sito') || lower.includes('url')) siteIdx = i;
                 if(lower.includes('last') || lower.includes('date') || lower.includes('data') || lower.includes('seen')) dateIdx = i;
                 if(lower.includes('sector') && lower.includes('attack')) sectorIdx = i;
@@ -887,7 +874,6 @@ let siteIdx = -1, dateIdx = -1, sectorIdx = -1, goalIdx = -1, screenshotIdx = -1
                 
                 if(values[siteIdx] && values[siteIdx].length > 0) {
                     const rowData = {
-                        state: stateIdx !== -1 ? values[stateIdx].trim().toUpperCase() : '',
                         site: values[siteIdx] || '',
                         date: dateIdx !== -1 ? parseItalianDate(values[dateIdx]) : '',
                         sector: sector.trim().toUpperCase(),
@@ -1097,16 +1083,14 @@ function displayPage(data, page){
             `;
         }
         
-       tbody.innerHTML += `
-<tr>
-    <td title="${r.site}">${siteDisplay}</td>
-    <td>${dateDisplay}</td>
-    <td>${r.sector}</td>
-    <td>${r.goal}</td>
-    <td>${r.state}</td> <!-- Nuova colonna -->
-    <td class="screenshot-cell">${screenshotCell}</td>
-</tr>`;
-
+        tbody.innerHTML += `
+        <tr>
+            <td title="${r.site}">${siteDisplay}</td>
+            <td>${dateDisplay}</td>
+            <td>${r.sector}</td>
+            <td>${r.goal}</td>
+            <td class="screenshot-cell">${screenshotCell}</td>
+        </tr>`;
     });
 
     const total = Math.ceil(sortedData.length / rowsPerPage) || 1;
