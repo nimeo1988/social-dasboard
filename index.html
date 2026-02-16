@@ -1884,56 +1884,100 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('📁 Carica manualmente un file CSV per iniziare');
         });
 });
-// ================== PING SITI ==================
-async function pingSite(url) {
+// ================== PING TUTTI I SITI DEL DASHBOARD ==================
+async function pingSiteFull(url) {
     try {
-        // Aggiungi 'https://' se manca
-        let fullUrl = url;
-        if (!/^https?:\/\//i.test(url)) fullUrl = 'https://' + url;
+        let fullUrl = url.trim();
+        if (!/^https?:\/\//i.test(fullUrl)) fullUrl = 'https://' + fullUrl;
 
-        // Prova a fare una richiesta HEAD
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 5000); // timeout 5s
+        const timeout = setTimeout(() => controller.abort(), 5000);
 
-        const response = await fetch(fullUrl, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
-        clearTimeout(timeout);
-        // Se non va in errore, consideriamo online
-        return '✅ Online';
-    } catch (err) {
+        try {
+            await fetch(fullUrl, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
+            clearTimeout(timeout);
+            return '✅ Online';
+        } catch (err) {
+            // fallback proxy gratuito
+            await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(fullUrl)}`, { signal: controller.signal });
+            clearTimeout(timeout);
+            return '✅ Online';
+        }
+    } catch {
         return '❌ Offline';
     }
 }
 
-async function pingAllSites() {
-    const tbody = document.getElementById('tableBody');
-    const rows = tbody.querySelectorAll('tr');
-    for (let i = 0; i < rows.length; i++) {
-        const siteCell = rows[i].cells[0];
-        if (!siteCell) continue;
-        const url = siteCell.textContent.trim();
-        if (!url) continue;
+async function pingAllSitesFull() {
+    if(currentData.length === 0) return alert('⚠️ Nessun sito caricato!');
 
-        // Crea/aggiorna la colonna "Status"
-        let statusCell = rows[i].cells[5];
-        if (!statusCell) {
-            statusCell = rows[i].insertCell(5);
+    // Creiamo un overlay temporaneo
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.background = 'rgba(0,0,0,0.85)';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.zIndex = '9999';
+    overlay.style.color = '#fff';
+    overlay.innerHTML = `<h2>⏳ Ping in corso su tutti i siti...</h2><p id="pingProgress"></p>`;
+    document.body.appendChild(overlay);
+
+    const progressText = document.getElementById('pingProgress');
+
+    // Ping in parallelo con limite massimo di 5 richieste simultanee
+    const limit = 5;
+    let index = 0;
+
+    async function worker() {
+        while(index < currentData.length) {
+            const i = index++;
+            const siteObj = currentData[i];
+            const status = await pingSiteFull(siteObj.site);
+            siteObj.pingStatus = status;
+
+            // Aggiorniamo la riga visibile se presente nella pagina corrente
+            const pageStart = (currentPage-1)*rowsPerPage;
+            const pageEnd = pageStart + rowsPerPage;
+            if(i >= pageStart && i < pageEnd) {
+                const tbody = document.getElementById('tableBody');
+                const row = tbody.rows[i - pageStart];
+                if(row) {
+                    let cell = row.cells[5];
+                    if(!cell) cell = row.insertCell(5);
+                    cell.textContent = status;
+                }
+            }
+
+            progressText.textContent = `Ping ${i+1} di ${currentData.length}`;
         }
-        statusCell.textContent = '⏳ Pinging...';
-        const status = await pingSite(url);
-        statusCell.textContent = status;
     }
+
+    // Lanciamo worker paralleli
+    const workers = [];
+    for(let w=0; w<limit; w++) workers.push(worker());
+    await Promise.all(workers);
+
+    overlay.innerHTML = `<h2>✅ Ping completato!</h2>`;
+    setTimeout(() => overlay.remove(), 2000);
 }
 
-// Pulsante per ping
-const pingBtn = document.createElement('button');
-pingBtn.textContent = 'Ping All Sites';
-pingBtn.className = 'upload-btn';
-pingBtn.style.background = '#f39c12';
-pingBtn.style.marginBottom = '15px';
-pingBtn.onclick = pingAllSites;
+// Pulsante per ping su tutti i siti del dashboard
+const pingFullBtn = document.createElement('button');
+pingFullBtn.textContent = 'Ping All Sites (Full Dashboard)';
+pingFullBtn.className = 'upload-btn';
+pingFullBtn.style.background = '#d35400';
+pingFullBtn.style.marginBottom = '15px';
+pingFullBtn.onclick = pingAllSitesFull;
 
 // Inseriamo il pulsante sopra la tabella
-document.getElementById('tableContainer').insertBefore(pingBtn, document.querySelector('table'));
+document.getElementById('tableContainer').insertBefore(pingFullBtn, document.querySelector('table'));
+
 
 </script>
 
