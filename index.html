@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -9,481 +8,36 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-
-.upload-section,
-.upload-area {
-    display: none;
-}
-
-    
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
+/* ====== STILI PRINCIPALI ====== */
 body {
-font-family: 'Rajdhani', sans-serif;
-background: #1a1d35;
-color: #fff;
-line-height: 1.6;
-}
-
-
-.container {
-max-width: 1200px;
-margin: 0 auto;
-padding: 20px;
-}
-
-    
-header {
-text-align: center;
-margin-bottom: 30px;
-padding: 20px 0;
-}
-
-h1 {
-font-size: 2.5rem;
-letter-spacing: 3px;
-font-weight: 700;
-margin: 0;
-}
-
-.subtitle {
-color: #8b95a5;
-font-size: 1.1rem;
-margin-top: 10px;
-letter-spacing: 1px;
-}
-
-
-.upload-section {
-background: #22253a;
-padding: 30px;
-border-radius: 12px;
-margin-bottom: 30px;
-box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-}
-
-.upload-section h2 {
-margin-bottom: 20px;
-color: #fff;
-letter-spacing: 2px;
-font-size: 1.3rem;
-}
-
-.upload-area {
-border: 3px dashed #2962FF;
-padding: 40px 20px;
-text-align: center;
-cursor: pointer;
-border-radius: 12px;
-transition: all 0.3s ease;
-background: rgba(41, 98, 255, 0.05);
-}
-
-.upload-area:hover {
-border-color: #4CAF50;
-background: rgba(76, 175, 80, 0.1);
-}
-
-.upload-area.dragover {
-border-color: #4CAF50;
-background: rgba(76, 175, 80, 0.15);
-transform: scale(1.02);
-}
-
-.upload-icon {
-font-size: 3rem;
-margin-bottom: 10px;
-}
-
-.file-input {
-display: none;
-}
-
-.file-info {
-margin-top: 15px;
-font-size: 0.95rem;
-color: #27ae60;
-font-weight: 500;
-}
-
-.error-msg {
-margin-top: 15px;
-font-size: 0.95rem;
-color: #e74c3c;
-font-weight: 500;
-}
-
-
-.table-container {
-background: #22253a;
-padding: 30px;
-border-radius: 12px;
-margin-bottom: 30px;
-box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-display: none;
-opacity: 0;
-transform: translateY(20px);
-transition: all 0.5s ease;
-}
-
-.table-container.active {
-display: block;
-opacity: 1;
-transform: translateY(0);
-}
-
-
-.search-box {
-padding: 12px 15px;
-background: #2c2f4d;
-border: 2px solid #3a3d5c;
-border-radius: 8px;
-color: #fff;
-font-size: 0.95rem;
-font-family: 'Rajdhani', sans-serif;
-transition: all 0.3s ease;
-}
-
-.search-box:focus {
-outline: none;
-border-color: #2962FF;
-background: #1a1d35;
-}
-
-.search-box::placeholder {
-color: #8b95a5;
-}
-
-
-.date-input-wrapper {
-position: relative;
-width: 100%;
-}
-
-.date-input-wrapper input[type="date"] {
-width: 100%;
-cursor: pointer;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-cursor: pointer;
-opacity: 1;
-filter: invert(0.7);
-font-size: 1.2em;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
-filter: invert(0.9);
-}
-
-input[type="date"]::-moz-calendar-picker-indicator {
-cursor: pointer;
-opacity: 1;
-filter: invert(0.7);
-}
-
-input[type="date"]:focus {
-outline: 2px solid #2962FF;
-outline-offset: 2px;
-}
-
-.search-box[type="date"] {
-position: relative;
-padding-right: 40px;
-}
-
-.date-tooltip {
-position: absolute;
-bottom: -25px;
-left: 0;
-font-size: 0.75rem;
-color: #8b95a5;
-pointer-events: none;
-opacity: 0;
-transition: opacity 0.3s ease;
-}
-
-.date-input-wrapper:hover .date-tooltip {
-opacity: 1;
-}
-
-
-.upload-btn {
-padding: 12px 24px;
-background: #2962FF;
-color: #fff;
-border: none;
-border-radius: 8px;
-font-size: 1rem;
-font-family: 'Rajdhani', sans-serif;
-font-weight: 600;
-cursor: pointer;
-transition: all 0.3s ease;
-letter-spacing: 0.5px;
-}
-
-.upload-btn:hover {
-background: #1e4ed8;
-transform: translateY(-2px);
-box-shadow: 0 4px 12px rgba(41, 98, 255, 0.4);
-}
-
-.upload-btn:active {
-transform: translateY(0);
-}
-
-.upload-btn:disabled {
-background: #555;
-cursor: not-allowed;
-transform: none;
-}
-
-
-table {
-width: 100%;
-border-collapse: collapse;
-margin-bottom: 20px;
-}
-
-th, td {
-padding: 12px 15px;
-text-align: left;
-font-size: 0.9rem;
-border-bottom: 1px solid #2c2f4d;
-}
-
-th {
-background: #1a1d35;
-font-weight: 600;
-letter-spacing: 1px;
-text-transform: uppercase;
-font-size: 0.85rem;
-color: #a8b2c1;
-}
-
-tr:hover {
-background: rgba(41, 98, 255, 0.05);
-}
-
-.screenshot-thumbnail {
-width: 80px;
-height: 50px;
-object-fit: cover;
-cursor: pointer;
-border-radius: 6px;
-transition: all 0.3s ease;
-border: 2px solid #2c2f4d;
-}
-
-.screenshot-thumbnail:hover {
-transform: scale(1.1);
-border-color: #2962FF;
-box-shadow: 0 4px 12px rgba(41, 98, 255, 0.5);
-}
-
-.screenshot-cell {
-text-align: center;
-}
-
-.image-loading {
-display: inline-block;
-width: 80px;
-height: 50px;
-background: rgba(41, 98, 255, 0.1);
-border: 2px dashed #2c2f4d;
-border-radius: 6px;
-animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-0%, 100% { opacity: 0.5; }
-50% { opacity: 1; }
-}
-
-.pagination {
-text-align: center;
-margin: 20px 0;
-display: flex;
-justify-content: center;
-align-items: center;
-gap: 15px;
-}
-
-.pagination button {
-padding: 10px 20px;
-background: #2c2f4d;
-border: 2px solid #3a3d5c;
-color: #fff;
-border-radius: 8px;
-cursor: pointer;
-font-family: 'Rajdhani', sans-serif;
-font-weight: 600;
-transition: all 0.3s ease;
-}
-
-.pagination button:hover:not(:disabled) {
-background: #2962FF;
-border-color: #2962FF;
-}
-
-.pagination button:disabled {
-opacity: 0.3;
-cursor: not-allowed;
-}
-
-#pageInfo {
-font-weight: 600;
-color: #a8b2c1;
-}
-
-
-.modal {
-display: none;
-position: fixed;
-z-index: 1000;
-left: 0;
-top: 0;
-width: 100%;
-height: 100%;
-background: rgba(0, 0, 0, 0.95);
-justify-content: center;
-align-items: center;
-}
-
-.modal-content {
-max-width: 90%;
-max-height: 90%;
-border-radius: 8px;
-box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-}
-
-.close {
-position: absolute;
-top: 30px;
-right: 40px;
-color: #fff;
-font-size: 40px;
-font-weight: bold;
-cursor: pointer;
-transition: all 0.3s ease;
-}
-
-.close:hover {
-color: #2962FF;
-transform: scale(1.2);
-}
-
-
-.charts-grid-two-cols {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 2rem;
-margin: 2rem 0;
-opacity: 0;
-transform: translateY(20px);
-transition: all 0.5s ease;
-}
-
-.charts-grid-two-cols.active {
-opacity: 1;
-transform: translateY(0);
-}
-
-.charts-grid-single {
-margin: 2rem 0;
-opacity: 0;
-transform: translateY(20px);
-transition: all 0.5s ease;
-}
-
-.charts-grid-single.active {
-opacity: 1;
-transform: translateY(0);
-}
-
-.chart-card {
-background: #22253a;
-padding: 25px;
-border-radius: 12px;
-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.chart-card h3 {
-margin-bottom: 20px;
-color: #fff;
-font-size: 1.1rem;
-letter-spacing: 1px;
-}
-
-.chart-wrapper {
-position: relative;
-height: 350px;
-}
-
-/* LOADING OVERLAY */
-.loading-overlay {
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background: rgba(26, 29, 53, 0.95);
-display: none;
-justify-content: center;
-align-items: center;
-z-index: 9999;
-}
-
-.loading-overlay.active {
-display: flex;
-}
-
-.loading-content {
-text-align: center;
-}
-
-.spinner {
-border: 4px solid #2c2f4d;
-border-top: 4px solid #2962FF;
-border-radius: 50%;
-width: 60px;
-height: 60px;
-animation: spin 1s linear infinite;
-margin: 0 auto 20px;
-}
-
-@keyframes spin {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(360deg); }
-}
-
-.image-error {
-display: inline-block;
-padding: 5px 10px;
-background: #e74c3c;
-color: white;
-border-radius: 4px;
-font-size: 0.75rem;
-}
-
-
-@media (max-width: 768px) {
-.charts-grid-two-cols {
-grid-template-columns: 1fr;
-}
-
-h1 {
-    font-size: 1.8rem;
-}
-
-.container {
-    padding: 15px;
-}
-
-}
+    font-family: 'Rajdhani', sans-serif;
+    background:#0f111a;
+    color:#f5f6fa;
+    margin:0;
+}
+.container { max-width:1200px; margin:0 auto; padding:2rem; }
+header { text-align:center; margin-bottom:2rem; }
+header h1 { font-size:2rem; letter-spacing:2px; color:#fff; margin:0; }
+header .subtitle { color:#8b95a5; font-size:1rem; margin-top:.5rem; }
+.upload-section { background:#1e1f2a; padding:1.5rem; border-radius:10px; margin-bottom:2rem; }
+.upload-area { border:2px dashed #444; padding:2rem; border-radius:10px; text-align:center; cursor:pointer; transition:0.3s; }
+.upload-area:hover { background:#222; }
+.file-input { display:none; }
+.upload-btn { background:#3498db; border:none; color:#fff; padding:.8rem 1rem; border-radius:5px; cursor:pointer; transition:0.3s; }
+.upload-btn:hover { background:#2980b9; }
+table { width:100%; border-collapse:collapse; margin-bottom:1rem; }
+table th, table td { padding:.8rem; border-bottom:1px solid #333; text-align:left; }
+table th { background:#1e1f2a; }
+.table-container { overflow-x:auto; }
+.pagination { display:flex; justify-content:center; align-items:center; gap:.5rem; margin-top:1rem; }
+.search-box { padding:.5rem; border-radius:5px; border:1px solid #333; background:#111; color:#fff; width:100%; }
+.date-input-wrapper { display:flex; flex-direction:column; }
+.error-msg { color:#e74c3c; margin-top:1rem; }
+/* Loader per status */
+.status-loader { font-size:0.8rem; color:#f39c12; }
+.status-online { color:#2ecc71; font-weight:bold; }
+.status-offline { color:#e74c3c; font-weight:bold; }
 </style>
-
 </head>
 <body>
 <div class="container">
@@ -507,12 +61,10 @@ h1 {
 <div class="table-container" id="tableContainer">
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 100px;gap:1rem;margin-bottom:1rem;">
         <div class="date-input-wrapper">
-            <input type="date" id="dateStartFilter" class="search-box" placeholder="Start Date" title="Clicca per selezionare la data di inizio">
-            <span class="date-tooltip">📅 Data inizio</span>
+            <input type="date" id="dateStartFilter" class="search-box" placeholder="Start Date">
         </div>
         <div class="date-input-wrapper">
-            <input type="date" id="dateEndFilter" class="search-box" placeholder="End Date" title="Clicca per selezionare la data di fine">
-            <span class="date-tooltip">📅 Data fine</span>
+            <input type="date" id="dateEndFilter" class="search-box" placeholder="End Date">
         </div>
         <select id="sectorFilter" class="search-box" style="cursor:pointer;">
             <option value="">All Sectors</option>
@@ -520,7 +72,7 @@ h1 {
         <select id="goalFilter" class="search-box" style="cursor:pointer;">
             <option value="">All Goals</option>
         </select>
-        <button id="resetFiltersBtn" class="upload-btn" style="background:#e74c3c;padding:0.9rem 1rem;font-size:0.9rem;" title="Resetta tutti i filtri">
+        <button id="resetFiltersBtn" class="upload-btn" style="background:#e74c3c;padding:0.9rem 1rem;font-size:0.9rem;">
             🔄 Reset
         </button>
     </div>
@@ -539,11 +91,12 @@ h1 {
             <th>Sector Attacked</th>
             <th>Attack Goal</th>
             <th>Screenshot</th>
+            <th>Status</th> <!-- nuova colonna -->
         </tr>
     </thead>
     <tbody id="tableBody">
         <tr>
-            <td colspan="5" style="text-align:center;color:#8b95a5;">No data loaded</td>
+            <td colspan="6" style="text-align:center;color:#8b95a5;">No data loaded</td>
         </tr>
     </tbody>
 </table>
@@ -551,1341 +104,157 @@ h1 {
     <button id="prevBtn">← Previous</button>
     <span id="pageInfo">Page 1</span>
     <button id="nextBtn">Next →</button>
-    <span style="margin-left: 20px; display: flex; align-items: center; gap: 8px;">
-        <label for="jumpPage" style="font-size: 0.9rem; color: #a8b2c1;">Jump to page:</label>
-        <input 
-            type="number" 
-            id="jumpPage" 
-            min="1" 
-            max="1" 
-            style="width: 60px; padding: 8px; background: #2c2f4d; border: 2px solid #3a3d5c; border-radius: 6px; color: #fff; font-family: 'Rajdhani', sans-serif; text-align: center;"
-            placeholder="Page #"
-        >
-        <button id="jumpBtn" class="upload-btn" style="background: #9b59b6; padding: 0.6rem 1rem; font-size: 0.85rem;">
-            Go
-        </button>
+    <span style="margin-left: 20px;">
+        <label for="jumpPage" style="color: #a8b2c1;">Jump to page:</label>
+        <input type="number" id="jumpPage" min="1" max="1" style="width:60px;text-align:center;">
+        <button id="jumpBtn" class="upload-btn" style="background:#9b59b6;">Go</button>
     </span>
 </div>
-
-</div>
-
-<div class="charts-grid-two-cols" id="chartsGridSectors" style="display:none;">
-    <div class="chart-card">
-        <h3>Distribuzione per Settore (Tutti)</h3>
-        <div class="chart-wrapper"><canvas id="allSectorsChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-        <h3>Top 5 Settori Attaccati</h3>
-        <div class="chart-wrapper"><canvas id="top5SectorsBarChart"></canvas></div>
-    </div>
-</div>
-
-<div class="charts-grid-two-cols" id="chartsGridGoalsAndTime" style="display:none;">
-    <div class="chart-card">
-        <h3>Distribuzione Obiettivi di Attacco (Tutti)</h3>
-        <div class="chart-wrapper"><canvas id="goalsPieChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-        <h3>Attacchi Temporali - Trend Mensile</h3>
-        <div class="chart-wrapper"><canvas id="monthChart"></canvas></div>
-    </div>
-</div>
-
-<div class="charts-grid-two-cols" id="chartsGridEvolution" style="display:none;">
-    <div class="chart-card">
-        <h3>Settori - Evoluzione Temporale</h3>
-        <div class="chart-wrapper"><canvas id="goalsByMonthChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-        <h3>Obiettivi - Evoluzione Temporale</h3>
-        <div class="chart-wrapper"><canvas id="attackGoalsTimeChart"></canvas></div>
-    </div>
-</div>
-
-<div id="imageModal" class="modal" onclick="closeModal()">
-    <span class="close">&times;</span>
-    <img class="modal-content" id="modalImage">
-</div>
-
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-content">
-        <div class="spinner"></div>
-        <p style="font-size:1.2rem;color:#a8b2c1;">Generazione PDF in corso...</p>
-    </div>
-</div>
-
 </div>
 
 <script>
-let allSectorsChart, top5SectorsBarChart, goalsPieChart, monthChart, goalsByMonthChart, attackGoalsTimeChart;
-let currentData = [];
-let filteredData = [];
+// ===== Variabili globali =====
+let csvData = [];
 let currentPage = 1;
 const rowsPerPage = 10;
-const colors=['#5a8db8','#e74c3c','#e67e22','#7b8794','#3498db','#9b59b6','#27ae60','#f39c12','#c0392b','#16a085','#8e44ad','#2c3e50','#e67e22','#95a5a6','#34495e'];
 
+// ===== Upload CSV =====
 const uploadArea = document.getElementById('uploadArea');
 const fileInput = document.getElementById('fileInput');
-const fileInfo = document.getElementById('fileInfo');
-const errorMsg = document.getElementById('errorMsg');
-
-const dateStartFilter = document.getElementById('dateStartFilter');
-const dateEndFilter = document.getElementById('dateEndFilter');
-
-dateStartFilter.addEventListener('click', function() {
-    this.showPicker && this.showPicker();
-});
-
-dateEndFilter.addEventListener('click', function() {
-    this.showPicker && this.showPicker();
-});
-
-dateStartFilter.addEventListener('change', function() {
-    if(this.value) {
-        this.style.borderColor = '#2962FF';
-        setTimeout(() => {
-            this.style.borderColor = '';
-        }, 1000);
-    }
-});
-
-dateEndFilter.addEventListener('change', function() {
-    if(this.value) {
-        this.style.borderColor = '#2962FF';
-        setTimeout(() => {
-            this.style.borderColor = '';
-        }, 1000);
-    }
-});
-
-uploadArea.onclick = () => fileInput.click();
-
-uploadArea.addEventListener('dragover', (e) => {
+uploadArea.addEventListener('click', () => fileInput.click());
+uploadArea.addEventListener('dragover', e => e.preventDefault());
+uploadArea.addEventListener('drop', e => {
     e.preventDefault();
-    uploadArea.classList.add('dragover');
+    if(e.dataTransfer.files.length) fileInput.files = e.dataTransfer.files;
+    handleFile(fileInput.files[0]);
 });
-
-uploadArea.addEventListener('dragleave', () => {
-    uploadArea.classList.remove('dragover');
-});
-
-uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if(file) handleFile(file);
-});
-
-fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if(file) handleFile(file);
-});
-
-// ============ FUNZIONE CHIAVE: GENERARE URL IMMAGINE ============
-function getLocalImagePath(screenshotName) {
-    if (!screenshotName || screenshotName.trim() === '') {
-        return '';
-    }
-    
-    const fileName = screenshotName.trim();
-    
-    // METODO 1: GitHub Pages (se abilitato)
-    // Decommentare se GitHub Pages è attivo nel tuo repo
-    // return `https://nimeo1988.github.io/social-dasboard/images/${fileName}`;
-    
-    // METODO 2: Raw GitHub Content con bypass CORS
-    // Usa jsdelivr come CDN per GitHub (ha CORS abilitato)
-    return `https://cdn.jsdelivr.net/gh/nimeo1988/social-dasboard@main/images/${fileName}`;
-    
-    // METODO 3: Alternativa con rawcdn.githack (fallback)
-    // return `https://rawcdn.githack.com/nimeo1988/social-dasboard/main/images/${fileName}`;
-}
-
-function showImage(imagePath) {
-    const modal = document.getElementById('imageModal');
-    const modalImg = document.getElementById('modalImage');
-    modal.style.display = 'flex';
-    modalImg.src = imagePath;
-}
-
-function closeModal() {
-    document.getElementById('imageModal').style.display = 'none';
-}
-
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeModal();
-    }
-});
-
-function parseItalianDate(dateStr) {
-    if (!dateStr || dateStr.trim() === '') return '';
-    
-    const trimmed = dateStr.trim();
-    
-    // Se è nel formato ISO (2026-02-05 o 2026-02-05 08:55:04)
-    if (trimmed.match(/^\d{4}-\d{2}-\d{2}/)) {
-        // Estrai la data e opzionalmente l'orario
-        const parts = trimmed.split(' ');
-        const datePart = parts[0]; // 2026-02-05
-        const timePart = parts[1] || ''; // 08:55:04 (opzionale)
-        
-        const dateParts = datePart.split('-');
-        
-        if (dateParts.length === 3) {
-            const year = dateParts[0].trim();
-            const month = dateParts[1].trim();
-            const day = dateParts[2].trim();
-            
-            // Validazione base
-            const dayNum = parseInt(day);
-            const monthNum = parseInt(month);
-            const yearNum = parseInt(year);
-            
-            if (dayNum >= 1 && dayNum <= 31 && 
-                monthNum >= 1 && monthNum <= 12 && 
-                yearNum >= 1900 && yearNum <= 2100) {
-                // Ritorna data + ora se presente
-                if (timePart) {
-                    return `${year}-${month}-${day} ${timePart}`;
-                }
-                return `${year}-${month}-${day}`;
-            }
-        }
-    }
-    
-    // Se è nel formato italiano (dd/mm/yyyy)
-    const datePart = trimmed.split(' ')[0];
-    const parts = datePart.split('/');
-    
-    if (parts.length === 3) {
-        const day = parts[0].trim().padStart(2, '0');
-        const month = parts[1].trim().padStart(2, '0');
-        const year = parts[2].trim();
-        
-        // Validazione base
-        const dayNum = parseInt(day);
-        const monthNum = parseInt(month);
-        const yearNum = parseInt(year);
-        
-        if (dayNum >= 1 && dayNum <= 31 && 
-            monthNum >= 1 && monthNum <= 12 && 
-            yearNum >= 1900 && yearNum <= 2100) {
-            return `${year}-${month}-${day}`;
-        }
-    }
-    
-    return '';
-}
+fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
 
 function handleFile(file){
-    errorMsg.textContent = '';
-    fileInfo.textContent = '';
-    fileInfo.textContent = `📁 Loading ${file.name}...`;
-    
+    if(!file) return;
+    if(!file.name.match(/\.(csv|tsv|txt)$/i)){
+        document.getElementById('errorMsg').textContent = "Invalid file type!";
+        return;
+    }
+    document.getElementById('errorMsg').textContent = "";
     const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const text = e.target.result;
-            console.log('File loaded, size:', text.length);
-            
-            const firstLine = text.split('\n')[0];
-            const tabCount = (firstLine.match(/\t/g) || []).length;
-            const commaCount = (firstLine.match(/,/g) || []).length;
-            const delimiter = tabCount > commaCount ? '\t' : ',';
-            console.log('Delimiter:', delimiter === '\t' ? 'TAB' : 'COMMA');
-            
-            const lines = text.split('\n').filter(l => l.trim());
-            if(lines.length < 2) {
-                errorMsg.textContent = '⚠️ File is empty or has no data rows';
-                return;
-            }
-            
-            function parseCSVLine(line, delim) {
-                const result = [];
-                let current = '';
-                let inQuotes = false;
-                
-                for(let i = 0; i < line.length; i++) {
-                    const char = line[i];
-                    const nextChar = line[i + 1];
-                    
-                    if(char === '"') {
-                        if(inQuotes && nextChar === '"') {
-                            current += '"';
-                            i++;
-                        } else {
-                            inQuotes = !inQuotes;
-                        }
-                    } else if(char === delim && !inQuotes) {
-                        result.push(current.trim());
-                        current = '';
-                    } else if(char !== '\r') {
-                        current += char;
-                    }
-                }
-                
-                // Ultimo campo
-                current = current.trim();
-                // Se inizia e finisce con virgolette, rimuovile
-                if (current.startsWith('"') && current.endsWith('"')) {
-                    current = current.slice(1, -1);
-                }
-                result.push(current);
-                
-                return result;
-            }
-            
-            const headers = parseCSVLine(lines[0], delimiter);
-            console.log('Headers found:', headers);
-            
-            let siteIdx = -1, dateIdx = -1, sectorIdx = -1, goalIdx = -1, screenshotIdx = -1;
-            headers.forEach((h, i) => {
-                const lower = h.toLowerCase().trim();
-                if(lower.includes('site') || lower.includes('sito') || lower.includes('url')) siteIdx = i;
-                if(lower.includes('last') || lower.includes('date') || lower.includes('data') || lower.includes('seen')) dateIdx = i;
-                if(lower.includes('sector') && lower.includes('attack')) sectorIdx = i;
-                if(lower.includes('goal') || lower.includes('obiettivo')) goalIdx = i;
-                if(lower.includes('screenshot') || lower.includes('image') || lower.includes('foto')) screenshotIdx = i;
-            });
-            
-            console.log('Indices - Site:', siteIdx, 'Date:', dateIdx, 'Sector:', sectorIdx, 'Goal:', goalIdx, 'Screenshot:', screenshotIdx);
-            
-            if(siteIdx === -1 || sectorIdx === -1 || goalIdx === -1) {
-                errorMsg.innerHTML = `⚠️ Required columns not found!<br><br>
-                    <strong>Columns found:</strong><br>
-                    ${headers.map((h, i) => `${i}: "${h}"`).join('<br>')}`;
-                return;
-            }
-            
-            const data = [];
-            for(let i = 1; i < lines.length; i++) {
-                const values = parseCSVLine(lines[i], delimiter);
-                
-                let sector = values[sectorIdx] || 'UNKNOWN';
-                let goal = values[goalIdx] || 'UNKNOWN';
-                
-                if(sector.startsWith('http') || sector.includes('://') || sector.includes('drive.google')) {
-                    sector = 'UNKNOWN';
-                }
-                if(goal.startsWith('http') || goal.includes('://') || goal.includes('drive.google')) {
-                    goal = 'UNKNOWN';
-                }
-                
-                if(values[siteIdx] && values[siteIdx].length > 0) {
-                    const rowData = {
-                        site: values[siteIdx] || '',
-                        date: dateIdx !== -1 ? parseItalianDate(values[dateIdx]) : '',
-                        sector: sector.trim().toUpperCase(),
-                        goal: goal.trim().toUpperCase(),
-                        screenshot: screenshotIdx !== -1 ? values[screenshotIdx] : '',
-                        rowIndex: i
-                    };
-                    
-                    if(i <= 5) {
-                        console.log(`Row ${i}:`, {
-                            site: rowData.site.substring(0, 50),
-                            sector: rowData.sector,
-                            goal: rowData.goal,
-                            screenshot: rowData.screenshot
-                        });
-                    }
-                    
-                    data.push(rowData);
-                }
-            }
-            
-            console.log('Parsed', data.length, 'records');
-            
-            currentData = data;
-            filteredData = data;
-            
-            fileInfo.textContent = `✓ Successfully loaded ${data.length} records`;
-            
-            document.getElementById('tableContainer').classList.add('active');
-            
-            populateFilters(data);
-            displayPage(filteredData, 1);
-            updateAllCharts(filteredData);
-            
-            setTimeout(() => {
-                document.getElementById('tableContainer').scrollIntoView({behavior:'smooth'});
-            }, 300);
-            
-        } catch(error) {
-            errorMsg.textContent = '⚠️ Error: ' + error.message;
-            console.error('Parse error:', error);
-        }
-    };
-    
-    reader.onerror = () => {
-        errorMsg.textContent = '⚠️ Error reading file';
-    };
-    
+    reader.onload = e => {
+        const text = e.target.result;
+        parseCSV(text);
+    }
     reader.readAsText(file);
 }
 
-document.getElementById('dateStartFilter').addEventListener('change', applyFilters);
-document.getElementById('dateEndFilter').addEventListener('change', applyFilters);
-document.getElementById('sectorFilter').addEventListener('change', applyFilters);
-document.getElementById('goalFilter').addEventListener('change', applyFilters);
-
-document.getElementById('resetFiltersBtn').addEventListener('click', function() {
-    document.getElementById('dateStartFilter').value = '';
-    document.getElementById('dateEndFilter').value = '';
-    document.getElementById('sectorFilter').value = '';
-    document.getElementById('goalFilter').value = '';
-    applyFilters();
-});
-
-function applyFilters() {
-    const dateStart = document.getElementById('dateStartFilter').value;
-    const dateEnd = document.getElementById('dateEndFilter').value;
-    const sectorFilter = document.getElementById('sectorFilter').value;
-    const goalFilter = document.getElementById('goalFilter').value;
-    
-    filteredData = currentData.filter(r => {
-        if(dateStart && r.date < dateStart) return false;
-        if(dateEnd && r.date > dateEnd) return false;
-        if(sectorFilter && r.sector !== sectorFilter) return false;
-        if(goalFilter && r.goal !== goalFilter) return false;
-        return true;
+// ===== Parse CSV =====
+function parseCSV(text){
+    const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+    const headers = lines[0].split(/,|;/).map(h => h.trim().toLowerCase());
+    csvData = lines.slice(1).map(line => {
+        const values = line.split(/,|;/);
+        let obj = {};
+        headers.forEach((h,i)=> obj[h] = values[i] || '');
+        obj.status = 'checking'; // inizialmente checking
+        return obj;
     });
-    
-    displayPage(filteredData, 1);
-    updateAllCharts(filteredData);
+    populateFilters();
+    checkAllOnlineStatus();
 }
 
-function populateFilters(data) {
-    const sectors = [...new Set(data.map(r => r.sector))].sort();
-    const sectorSelect = document.getElementById('sectorFilter');
-    sectorSelect.innerHTML = '<option value="">All Sectors</option>';
-    sectors.forEach(s => {
-        const option = document.createElement('option');
-        option.value = s;
-        option.textContent = s;
-        sectorSelect.appendChild(option);
-    });
-    
-    const goals = [...new Set(data.map(r => r.goal))].sort();
-    const goalSelect = document.getElementById('goalFilter');
-    goalSelect.innerHTML = '<option value="">All Goals</option>';
-    goals.forEach(g => {
-        const option = document.createElement('option');
-        option.value = g;
-        option.textContent = g;
-        goalSelect.appendChild(option);
-    });
+// ===== Popola filtri =====
+function populateFilters(){
+    const sectorSet = new Set(csvData.map(d=>d.sector_attacked));
+    const goalSet = new Set(csvData.map(d=>d.attack_goal));
+    const sectorFilter = document.getElementById('sectorFilter');
+    const goalFilter = document.getElementById('goalFilter');
+    sectorFilter.innerHTML = '<option value="">All Sectors</option>';
+    goalFilter.innerHTML = '<option value="">All Goals</option>';
+    sectorSet.forEach(s=>{if(s)s && sectorFilter.append(new Option(s,s));});
+    goalSet.forEach(g=>{if(g)goalFilter.append(new Option(g,g));});
 }
 
-document.getElementById('prevBtn').onclick = () => {
-    if(currentPage > 1) {
-        currentPage--;
-        displayPage(filteredData, currentPage);
-    }
-};
-
-document.getElementById('nextBtn').onclick = () => {
-    const total = Math.ceil(filteredData.length / rowsPerPage);
-    if(currentPage < total) {
-        currentPage++;
-        displayPage(filteredData, currentPage);
-    }
-};
-
-// Jump to page
-document.getElementById('jumpBtn').addEventListener('click', () => {
-    const jumpInput = document.getElementById('jumpPage');
-    const pageNum = parseInt(jumpInput.value);
-    const total = Math.ceil(filteredData.length / rowsPerPage);
-    
-    if (pageNum >= 1 && pageNum <= total) {
-        displayPage(filteredData, pageNum);
-        jumpInput.value = '';
-    } else {
-        alert(`⚠️ Inserisci un numero tra 1 e ${total}`);
-        jumpInput.value = '';
-    }
-});
-
-// Permetti di saltare pagina premendo Enter
-document.getElementById('jumpPage').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        document.getElementById('jumpBtn').click();
-    }
-});
-
-function formatDateForDisplay(isoDate) {
-    // Converte yyyy-mm-dd o yyyy-mm-dd HH:MM:SS in dd/mm/yyyy HH:MM:SS
-    if (!isoDate || isoDate.length < 10) return '-';
-    
-    // Separa data e ora
-    const parts = isoDate.split(' ');
-    const datePart = parts[0]; // yyyy-mm-dd
-    const timePart = parts[1] || ''; // HH:MM:SS (opzionale)
-    
-    const dateParts = datePart.split('-');
-    if (dateParts.length === 3) {
-        const formattedDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
-        
-        // Se c'è l'orario, aggiungilo
-        if (timePart) {
-            return `${formattedDate} ${timePart}`;
+// ===== Controlla status online/offline =====
+async function checkAllOnlineStatus(){
+    for(let i=0;i<csvData.length;i++){
+        displayPage(csvData, currentPage); // mostra loader
+        const site = csvData[i].site;
+        try {
+            const res = await fetch(`/api/checkOnline?site=${encodeURIComponent(site)}`);
+            const data = await res.json();
+            csvData[i].status = data.online ? 'online' : 'offline';
+        } catch(e){
+            csvData[i].status = 'offline';
         }
-        
-        return formattedDate;
+        displayPage(csvData, currentPage);
     }
-    
-    return isoDate;
 }
 
+// ===== Mostra tabella paginata =====
 function displayPage(data, page){
     currentPage = page;
-    
-    // Ordina per data DESC (ultimo al primo)
     const sortedData = [...data].sort((a, b) => {
         if (!a.date || !b.date) return 0;
         return b.date.localeCompare(a.date);
     });
-    
+
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
     const start = (page - 1) * rowsPerPage;
     const pageData = sortedData.slice(start, start + rowsPerPage);
 
     if(pageData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#8b95a5;">No data found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#8b95a5;">No data found</td></tr>';
         return;
     }
 
     pageData.forEach(r => {
-        const siteDisplay = r.site.length > 50 ? r.site.substring(0, 47) + '...' : r.site;
-        const dateDisplay = r.date ? formatDateForDisplay(r.date) : '-';
-        
-        const imagePath = getLocalImagePath(r.screenshot);
-        
-        let screenshotCell = '-';
-        if(imagePath) {
-            screenshotCell = `
-                <img 
-                    src="${imagePath}" 
-                    alt="Screenshot" 
-                    class="screenshot-thumbnail" 
-                    onclick="event.stopPropagation(); showImage('${imagePath}')" 
-                    onerror="
-                        this.style.display='none';
-                        console.warn('Immagine non caricata:', '${imagePath}');
-                        this.nextElementSibling.style.display='inline-block';
-                    "
-                    onload="console.log('✓ Immagine caricata:', '${imagePath}')"
-                >
-                <span style="display:none;color:#e74c3c;font-size:0.75rem;">❌ N/A</span>
-            `;
+        const tr = document.createElement('tr');
+
+        const siteCell = document.createElement('td');
+        siteCell.textContent = r.site || '';
+        tr.appendChild(siteCell);
+
+        const dateCell = document.createElement('td');
+        dateCell.textContent = r.date || '';
+        tr.appendChild(dateCell);
+
+        const sectorCell = document.createElement('td');
+        sectorCell.textContent = r.sector_attacked || '';
+        tr.appendChild(sectorCell);
+
+        const goalCell = document.createElement('td');
+        goalCell.textContent = r.attack_goal || '';
+        tr.appendChild(goalCell);
+
+        const screenshotCell = document.createElement('td');
+        screenshotCell.textContent = r.screenshot || '';
+        tr.appendChild(screenshotCell);
+
+        const statusCell = document.createElement('td');
+        if(r.status === 'checking'){
+            statusCell.innerHTML = '<span class="status-loader">Checking...</span>';
+        } else if(r.status === 'online'){
+            statusCell.innerHTML = '<span class="status-online">Online</span>';
+        } else {
+            statusCell.innerHTML = '<span class="status-offline">Offline</span>';
         }
-        
-        tbody.innerHTML += `
-        <tr>
-            <td title="${r.site}">${siteDisplay}</td>
-            <td>${dateDisplay}</td>
-            <td>${r.sector}</td>
-            <td>${r.goal}</td>
-            <td class="screenshot-cell">${screenshotCell}</td>
-        </tr>`;
+        tr.appendChild(statusCell);
+
+        tbody.appendChild(tr);
     });
 
-    const total = Math.ceil(sortedData.length / rowsPerPage) || 1;
-    document.getElementById('pageInfo').textContent = `Page ${page} of ${total} (${sortedData.length} records)`;
-    document.getElementById('prevBtn').disabled = page === 1;
-    document.getElementById('nextBtn').disabled = page === total;
-    
-    // Aggiorna il max dell'input jump
-    document.getElementById('jumpPage').max = total;
+    // Aggiorna paginazione
+    document.getElementById('pageInfo').textContent = `Page ${currentPage}`;
 }
 
-function updateAllCharts(data) {
-    const sectorFilter = document.getElementById('sectorFilter').value;
-    const goalFilter = document.getElementById('goalFilter').value;
-    const dateStart = document.getElementById('dateStartFilter').value;
-    const dateEnd = document.getElementById('dateEndFilter').value;
-    
-    let isLessThanMonth = false;
-    if(dateStart && dateEnd) {
-        const start = new Date(dateStart);
-        const end = new Date(dateEnd);
-        const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        isLessThanMonth = diffDays < 30;
-    }
-    
-    const showSectorCharts = !sectorFilter;
-    const chartsGridSectors = document.getElementById('chartsGridSectors');
-    if(showSectorCharts) {
-        chartsGridSectors.style.display = 'grid';
-        chartsGridSectors.classList.add('active');
-        updateAllSectorsChart(data);
-        updateTop5SectorsBarChart(data);
-    } else {
-        chartsGridSectors.style.display = 'none';
-        chartsGridSectors.classList.remove('active');
-        if(allSectorsChart) allSectorsChart.destroy();
-        if(top5SectorsBarChart) top5SectorsBarChart.destroy();
-    }
-    
-    const showGoalChart = !goalFilter;
-    const showMonthChart = !isLessThanMonth;
-    
-    const chartsGridGoalsAndTime = document.getElementById('chartsGridGoalsAndTime');
-    if(showGoalChart && showMonthChart) {
-        chartsGridGoalsAndTime.style.display = 'grid';
-        chartsGridGoalsAndTime.classList.add('active');
-        updateGoalsPieChart(data);
-        updateMonthChart(data);
-    } else {
-        chartsGridGoalsAndTime.style.display = 'none';
-        chartsGridGoalsAndTime.classList.remove('active');
-        if(goalsPieChart) goalsPieChart.destroy();
-        if(monthChart) monthChart.destroy();
-    }
-    
-    const chartsGridEvolution = document.getElementById('chartsGridEvolution');
-    if(showMonthChart) {
-        chartsGridEvolution.style.display = 'grid';
-        chartsGridEvolution.classList.add('active');
-        updateAttackGoalsTimeChart(data);
-        updateGoalsByMonthChart(data);
-    } else {
-        chartsGridEvolution.style.display = 'none';
-        chartsGridEvolution.classList.remove('active');
-        if(attackGoalsTimeChart) attackGoalsTimeChart.destroy();
-        if(goalsByMonthChart) goalsByMonthChart.destroy();
-    }
-}
-
-function updateAllSectorsChart(data){
-    if(allSectorsChart) allSectorsChart.destroy();
-    const sectors = {};
-    data.forEach(r => {
-        if(r.sector) sectors[r.sector] = (sectors[r.sector] || 0) + 1;
-    });
-    const sorted = Object.entries(sectors).sort((a,b) => b[1] - a[1]);
-    
-    const dynamicColors = sorted.map((_, idx) => colors[idx % colors.length]);
-    
-    allSectorsChart = new Chart(document.getElementById('allSectorsChart'), {
-        type: 'doughnut',
-        data: {
-            labels: sorted.map(([k]) => k),
-            datasets: [{
-                data: sorted.map(([_,v]) => v),
-                backgroundColor: dynamicColors,
-                borderWidth: 3,
-                borderColor: '#1a1d35'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#a8b2c1', 
-                        font: {size: 10}, 
-                        padding: 8,
-                        boxWidth: 12
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.parsed || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return `${label}: ${value} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-function updateTop5SectorsBarChart(data){
-    if(top5SectorsBarChart) top5SectorsBarChart.destroy();
-    const sectors = {};
-    data.forEach(r => {
-        if(r.sector) sectors[r.sector] = (sectors[r.sector] || 0) + 1;
-    });
-    const sorted = Object.entries(sectors).sort((a,b) => b[1] - a[1]).slice(0, 5);
-    
-    const brightColors = ['#2962FF', '#F44336', '#4CAF50', '#FF9800', '#9C27B0'];
-    
-    top5SectorsBarChart = new Chart(document.getElementById('top5SectorsBarChart'), {
-        type: 'bar',
-        data: {
-            labels: sorted.map(([k]) => k),
-            datasets: [{
-                label: 'Campagne',
-                data: sorted.map(([_,v]) => v),
-                backgroundColor: brightColors,
-                borderWidth: 0,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {display: false},
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    titleColor: '#FFFFFF',
-                    bodyColor: '#FFFFFF'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true, 
-                    ticks: {color: '#a8b2c1', font: {size: 12}}, 
-                    grid: {color: 'rgba(168,178,193,0.1)'}
-                },
-                x: {
-                    grid: {display: false}, 
-                    ticks: {color: '#a8b2c1', font: {size: 11}}
-                }
-            }
-        }
-    });
-}
-
-function updateGoalsPieChart(data){
-    if(goalsPieChart) goalsPieChart.destroy();
-    const goals = {};
-    data.forEach(r => {
-        if(r.goal) goals[r.goal] = (goals[r.goal] || 0) + 1;
-    });
-    const sorted = Object.entries(goals).sort((a,b) => b[1] - a[1]);
-    
-    const dynamicColors = sorted.map((_, idx) => colors[idx % colors.length]);
-    
-    goalsPieChart = new Chart(document.getElementById('goalsPieChart'), {
-        type: 'doughnut',
-        data: {
-            labels: sorted.map(([k]) => k),
-            datasets: [{
-                data: sorted.map(([_,v]) => v),
-                backgroundColor: dynamicColors,
-                borderWidth: 3,
-                borderColor: '#1a1d35'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#a8b2c1', 
-                        font: {size: 10}, 
-                        padding: 8,
-                        boxWidth: 12
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.parsed || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((value / total) * 100).toFixed(1);
-                            return `${label}: ${value} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-function updateMonthChart(data){
-    if(monthChart) monthChart.destroy();
-    const months = {};
-    data.forEach(r => {
-        if(r.date && r.date.length >= 7) {
-            const m = r.date.slice(0, 7);
-            if(m.match(/^\d{4}-\d{2}$/)) {
-                months[m] = (months[m] || 0) + 1;
-            }
-        }
-    });
-    const sorted = Object.keys(months).sort();
-    const counts = sorted.map(m => months[m]);
-
-    const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-    const labels = sorted.map(m => {
-        const parts = m.split('-');
-        if(parts.length === 2) {
-            const year = parts[0];
-            const monthIdx = parseInt(parts[1]) - 1;
-            if(monthIdx >= 0 && monthIdx < 12) {
-                return `${monthNames[monthIdx]} ${year}`;
-            }
-        }
-        return m;
-    });
-
-    monthChart = new Chart(document.getElementById('monthChart'), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Numero Campagne',
-                data: counts,
-                borderColor: '#2962FF',
-                backgroundColor: 'rgba(41, 98, 255, 0.3)',
-                fill: true,
-                tension: 0.4,
-                borderWidth: 2.5,
-                pointRadius: 5,
-                pointBackgroundColor: '#2962FF',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointHoverRadius: 7,
-                pointHoverBackgroundColor: '#2962FF',
-                pointHoverBorderColor: '#fff',
-                pointHoverBorderWidth: 3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    cornerRadius: 6,
-                    padding: 12,
-                    mode: 'index',
-                    intersect: false,
-                    displayColors: false,
-                    callbacks: {
-                        label: function(context) {
-                            return `Campagne: ${context.parsed.y}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    ticks: { 
-                        color: '#a8b2c1', 
-                        font: { size: 10 },
-                        maxRotation: 45,
-                        minRotation: 45
-                    },
-                    grid: { 
-                        display: true,
-                        color: 'rgba(168,178,193,0.05)'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: { 
-                        color: '#a8b2c1', 
-                        font: { size: 11 },
-                        stepSize: 20
-                    },
-                    grid: { 
-                        color: 'rgba(168,178,193,0.1)'
-                    }
-                }
-            }
-        }
-    });
-}
-
-function updateAttackGoalsTimeChart(data){
-    if(attackGoalsTimeChart) attackGoalsTimeChart.destroy();
-    
-    const monthGoalMap = {};
-    data.forEach(r => {
-        if(r.date && r.date.length >= 7 && r.goal) {
-            const month = r.date.slice(0, 7);
-            if(month.match(/^\d{4}-\d{2}$/)) {
-                if(!monthGoalMap[month]) monthGoalMap[month] = {};
-                monthGoalMap[month][r.goal] = (monthGoalMap[month][r.goal] || 0) + 1;
-            }
-        }
-    });
-    
-    const sortedMonths = Object.keys(monthGoalMap).sort();
-    const goalCounts = {};
-    data.forEach(r => {
-        if(r.goal) goalCounts[r.goal] = (goalCounts[r.goal] || 0) + 1;
-    });
-    const topGoals = Object.entries(goalCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([g]) => g);
-    
-    const lineColors = ['#2962FF', '#F44336', '#4CAF50', '#FF9800', '#9C27B0'];
-    
-    const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-    const monthLabels = sortedMonths.map(m => {
-        const [year, month] = m.split('-');
-        const monthIdx = parseInt(month) - 1;
-        if(monthIdx >= 0 && monthIdx < 12) {
-            return `${monthNames[monthIdx]} ${year}`;
-        }
-        return m;
-    });
-    
-    const datasets = topGoals.map((goal, idx) => ({
-        label: goal,
-        data: sortedMonths.map(month => monthGoalMap[month][goal] || 0),
-        borderColor: lineColors[idx % lineColors.length],
-        backgroundColor: 'transparent',
-        borderWidth: 2.5,
-        fill: false,
-        tension: 0.4,
-        pointRadius: 4,
-        pointBackgroundColor: lineColors[idx % lineColors.length],
-        pointBorderColor: '#fff',
-        pointBorderWidth: 1.5,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: lineColors[idx % lineColors.length],
-        pointHoverBorderColor: '#fff',
-        pointHoverBorderWidth: 2
-    }));
-    
-    attackGoalsTimeChart = new Chart(document.getElementById('attackGoalsTimeChart'), {
-        type: 'line',
-        data: {
-            labels: monthLabels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#a8b2c1',
-                        font: {size: 9},
-                        padding: 8,
-                        boxWidth: 15
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    cornerRadius: 6,
-                    padding: 10,
-                    mode: 'index',
-                    intersect: false
-                }
-            },
-            scales: {
-                x: {
-                    ticks: {
-                        color: '#a8b2c1',
-                        font: {size: 9},
-                        maxRotation: 45,
-                        minRotation: 45
-                    },
-                    grid: {
-                        display: true,
-                        color: 'rgba(168,178,193,0.05)'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: '#a8b2c1',
-                        font: {size: 10}
-                    },
-                    grid: {
-                        color: 'rgba(168,178,193,0.1)'
-                    }
-                }
-            },
-            interaction: {
-                mode: 'index',
-                intersect: false
-            }
-        }
-    });
-}
-
-function updateGoalsByMonthChart(data){
-    if(goalsByMonthChart) goalsByMonthChart.destroy();
-    
-    const monthSectorMap = {};
-    const allSectors = new Set();
-    data.forEach(r => {
-        if(r.date && r.date.length >=7 && r.date.match(/^\d{4}-\d{2}/) && r.sector){
-            const month = r.date.slice(0,7);
-            allSectors.add(r.sector);
-            if(!monthSectorMap[month]) monthSectorMap[month]={};
-            monthSectorMap[month][r.sector]=(monthSectorMap[month][r.sector]||0)+1;
-        }
-    });
-    
-    const sortedMonths = Object.keys(monthSectorMap).sort();
-    const sectorCountsForSort = {};
-    data.forEach(r => {
-        if(r.sector) sectorCountsForSort[r.sector] = (sectorCountsForSort[r.sector] || 0) + 1;
-    });
-    const topSectorsForChart = Object.entries(sectorCountsForSort).sort((a,b) => b[1] - a[1]).slice(0, 6).map(([s]) => s);
-    
-    const lineColors = ['#2962FF','#F44336','#4CAF50','#FF9800','#9C27B0','#00BCD4'];
-    
-    const monthNames = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
-    const monthLabels = sortedMonths.map(m => {
-        const parts = m.split('-');
-        if(parts.length === 2) {
-            const monthIdx = parseInt(parts[1]) - 1;
-            if(monthIdx >= 0 && monthIdx < 12) {
-                return `${monthNames[monthIdx]} ${parts[0]}`;
-            }
-        }
-        return m;
-    });
-    
-    const datasets = topSectorsForChart.map((sector, idx) => ({
-        label: sector,
-        data: sortedMonths.map(m => monthSectorMap[m][sector] || 0),
-        borderColor: lineColors[idx % lineColors.length],
-        backgroundColor: 'transparent',
-        fill: false,
-        tension: 0.4,
-        borderWidth: 2.5,
-        pointRadius: 4,
-        pointBackgroundColor: lineColors[idx % lineColors.length],
-        pointBorderColor: '#fff',
-        pointBorderWidth: 1.5,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: lineColors[idx % lineColors.length],
-        pointHoverBorderColor: '#fff',
-        pointHoverBorderWidth: 2
-    }));
-    
-    goalsByMonthChart = new Chart(document.getElementById('goalsByMonthChart'), {
-        type: 'line',
-        data: {
-            labels: monthLabels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#a8b2c1',
-                        font: {size: 9},
-                        padding: 8,
-                        boxWidth: 15
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    cornerRadius: 6,
-                    padding: 10,
-                    mode: 'index',
-                    intersect: false
-                }
-            },
-            scales: {
-                x: {
-                    ticks: {
-                        color: '#a8b2c1',
-                        font: {size: 9},
-                        maxRotation: 45,
-                        minRotation: 45
-                    },
-                    grid: {
-                        display: true,
-                        color: 'rgba(168,178,193,0.05)'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: '#a8b2c1',
-                        font: {size: 10}
-                    },
-                    grid: {
-                        color: 'rgba(168,178,193,0.1)'
-                    }
-                }
-            },
-            interaction: {
-                mode: 'index',
-                intersect: false
-            }
-        }
-    });
-}
-
-async function createChartImage(config, width = 1000, height = 500) {
-    return new Promise((resolve) => {
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        
-        const chart = new Chart(canvas, config);
-        
-        setTimeout(() => {
-            const imageData = canvas.toDataURL('image/png');
-            chart.destroy();
-            resolve(imageData);
-        }, 100);
-    });
-}
-
-document.getElementById('generatePdfBtn').addEventListener('click', async function () {
-
-    if (!filteredData || filteredData.length === 0) {
-        alert("Nessun dato disponibile per generare il report.");
-        return;
-    }
-
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    loadingOverlay.classList.add('active');
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
-
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 50;
-    let yPos = margin;
-
-    pdf.setFont("Helvetica");
-
-    // =========================
-    // CALCOLO INSIGHT AUTOMATICI
-    // =========================
-
-    const totalCampaigns = filteredData.length;
-    const uniqueSites = [...new Set(filteredData.map(r => r.site))].length;
-    const uniqueSectors = [...new Set(filteredData.map(r => r.sector))].length;
-    const uniqueGoals = [...new Set(filteredData.map(r => r.goal))].length;
-
-    const sectorCount = {};
-    const goalCount = {};
-    const monthCount = {};
-
-    filteredData.forEach(r => {
-        if (r.sector) sectorCount[r.sector] = (sectorCount[r.sector] || 0) + 1;
-        if (r.goal) goalCount[r.goal] = (goalCount[r.goal] || 0) + 1;
-        if (r.date && r.date.length >= 7) {
-            const m = r.date.slice(0, 7);
-            monthCount[m] = (monthCount[m] || 0) + 1;
-        }
-    });
-
-    const topSector = Object.entries(sectorCount).sort((a,b)=>b[1]-a[1])[0];
-    const topGoal = Object.entries(goalCount).sort((a,b)=>b[1]-a[1])[0];
-    const peakMonth = Object.entries(monthCount).sort((a,b)=>b[1]-a[1])[0];
-
-    // =========================
-    // COPERTINA
-    // =========================
-
-    pdf.setFillColor(20, 40, 90);
-    pdf.rect(0, 0, pageWidth, 160, "F");
-
-    pdf.setTextColor(255,255,255);
-    pdf.setFontSize(28);
-    pdf.text("REPORT ANALISI CAMPAGNE MALEVOLI", pageWidth/2, 90, {align:"center"});
-
-    pdf.setFontSize(14);
-    pdf.text("Social Engineering & Phishing Threat Landscape", pageWidth/2, 120, {align:"center"});
-
-    pdf.setTextColor(0,0,0);
-    pdf.setFontSize(10);
-    pdf.text(`Data generazione: ${new Date().toLocaleDateString()}`, margin, 200);
-
-    pdf.addPage();
-    yPos = margin;
-
-    // =========================
-    // EXECUTIVE SUMMARY
-    // =========================
-
-    pdf.setFontSize(16);
-    pdf.text("1. Executive Summary", margin, yPos);
-    yPos += 30;
-
-    pdf.setFontSize(11);
-
-    const summaryText = `
-Nel periodo analizzato sono state rilevate ${totalCampaigns} campagne malevole
-riconducibili a ${uniqueSites} siti distinti, con coinvolgimento di ${uniqueSectors} settori economici
-e ${uniqueGoals} differenti finalità di attacco.
-
-Il settore maggiormente colpito risulta ${topSector ? topSector[0] : "-"}
-(${topSector ? topSector[1] : 0} eventi), mentre l'obiettivo prevalente è
-${topGoal ? topGoal[0] : "-"}.
-
-Il picco di attività è stato registrato nel mese ${peakMonth ? peakMonth[0] : "-"}.
-`.trim();
-
-    pdf.text(summaryText, margin, yPos, {maxWidth: pageWidth - margin*2});
-
-    // =========================
-    // DISTRIBUZIONE SETTORI
-    // =========================
-
-    pdf.addPage();
-    yPos = margin;
-
-    pdf.setFontSize(16);
-    pdf.text("2. Distribuzione per Settore", margin, yPos);
-    yPos += 25;
-
-    pdf.setFontSize(11);
-
-    const sectorText = `
-L'analisi evidenzia una concentrazione significativa delle campagne
-nel settore ${topSector ? topSector[0] : "-"}, suggerendo una
-strategia mirata verso ambiti ad elevato valore economico o reputazionale.
-`.trim();
-
-    pdf.text(sectorText, margin, yPos, {maxWidth: pageWidth - margin*2});
-    yPos += 80;
-
-    const sectorImg = await createChartImage(allSectorsChart.config);
-    pdf.addImage(sectorImg, "PNG", margin, yPos, pageWidth - margin*2, 250);
-
-    // =========================
-    // DISTRIBUZIONE OBIETTIVI
-    // =========================
-
-    pdf.addPage();
-    yPos = margin;
-
-    pdf.setFontSize(16);
-    pdf.text("3. Distribuzione Obiettivi di Attacco", margin, yPos);
-    yPos += 25;
-
-    const goalText = `
-Le finalità di attacco risultano prevalentemente orientate a
-${topGoal ? topGoal[0] : "-"}, indicando una chiara
-propensione verso attività di sottrazione credenziali o frodi mirate.
-`.trim();
-
-    pdf.setFontSize(11);
-    pdf.text(goalText, margin, yPos, {maxWidth: pageWidth - margin*2});
-    yPos += 80;
-
-    const goalImg = await createChartImage(goalsPieChart.config);
-    pdf.addImage(goalImg, "PNG", margin, yPos, pageWidth - margin*2, 250);
-
-    // =========================
-    // TREND TEMPORALE
-    // =========================
-
-    pdf.addPage();
-    yPos = margin;
-
-    pdf.setFontSize(16);
-    pdf.text("4. Trend Temporale", margin, yPos);
-    yPos += 25;
-
-    const trendText = `
-L'analisi temporale mostra un andamento variabile delle campagne,
-con un picco nel mese ${peakMonth ? peakMonth[0] : "-"}.
-Il trend consente di identificare eventuali escalation
-o fasi di intensificazione delle attività malevole.
-`.trim();
-
-    pdf.setFontSize(11);
-    pdf.text(trendText, margin, yPos, {maxWidth: pageWidth - margin*2});
-    yPos += 80;
-
-    const monthImg = await createChartImage(monthChart.config);
-    pdf.addImage(monthImg, "PNG", margin, yPos, pageWidth - margin*2, 250);
-
-    // =========================
-    // CONCLUSIONI
-    // =========================
-
-    pdf.addPage();
-    yPos = margin;
-
-    pdf.setFontSize(16);
-    pdf.text("5. Conclusioni", margin, yPos);
-    yPos += 30;
-
-    const conclusionText = `
-I dati analizzati evidenziano una attività strutturata e mirata
-da parte degli attori malevoli.
-
-La concentrazione settoriale e la ripetitività degli obiettivi
-confermano la necessità di rafforzare le misure di prevenzione,
-monitoraggio e awareness.
-`.trim();
-
-    pdf.setFontSize(11);
-    pdf.text(conclusionText, margin, yPos, {maxWidth: pageWidth - margin*2});
-
-    // =========================
-    // FOOTER PAGINE
-    // =========================
-
-    const totalPages = pdf.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-        pdf.setPage(i);
-        pdf.setFontSize(8);
-        pdf.text(
-            `Report Analisi Campagne Malevole - Pagina ${i} di ${totalPages}`,
-            pageWidth - margin,
-            pageHeight - 20,
-            {align: "right"}
-        );
-    }
-
-    pdf.save(`Report_SOC_${new Date().toISOString().slice(0,10)}.pdf`);
-
-    loadingOverlay.classList.remove('active');
+// ===== Paginazione =====
+document.getElementById('prevBtn').addEventListener('click',()=>{if(currentPage>1) displayPage(csvData,currentPage-1);});
+document.getElementById('nextBtn').addEventListener('click',()=>{const maxPage = Math.ceil(csvData.length/rowsPerPage); if(currentPage<maxPage) displayPage(csvData,currentPage+1);});
+document.getElementById('jumpBtn').addEventListener('click',()=>{
+    const jump = parseInt(document.getElementById('jumpPage').value);
+    if(jump && jump>0 && jump<=Math.ceil(csvData.length/rowsPerPage)) displayPage(csvData,jump);
 });
-
-
-
-
-// AUTO LOAD CSV ON PAGE LOAD
-document.addEventListener('DOMContentLoaded', function() {
-    const csvPath = '/social-dasboard/data/dati.csv';
-    
-    fetch(csvPath)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('CSV file not found at ' + csvPath);
-            }
-            return response.text();
-        })
-        .then(text => {
-            const file = new File([text], 'dati.csv', { type: 'text/csv' });
-            handleFile(file);
-        })
-        .catch(err => {
-            console.warn('⚠️ Auto-load fallito: ' + err.message);
-            console.log('📁 Carica manualmente un file CSV per iniziare');
-        });
-});
+document.getElementById('resetFiltersBtn').addEventListener('click',()=>{document.getElementById('sectorFilter').value=''; document.getElementById('goalFilter').value=''; displayPage(csvData,1);});
 
 </script>
-
 </body>
 </html>
