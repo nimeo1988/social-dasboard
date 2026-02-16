@@ -2011,19 +2011,50 @@ async function createChartImage(config, width = 1200, height = 500) {
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
+            canvas.style.backgroundColor = '#ffffff';
             
-            const chart = new Chart(canvas, config);
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            
+            const chart = new Chart(canvas, {
+                ...config,
+                options: {
+                    ...config.options,
+                    responsive: false,
+                    animation: false
+                }
+            });
             
             setTimeout(() => {
                 try {
-                    const imageData = canvas.toDataURL('image/png');
-                    chart.destroy();
-                    resolve(imageData);
+                    // Attendi che chart sia completamente renderizzato
+                    setTimeout(() => {
+                        try {
+                            const imageData = canvas.toDataURL('image/png', 1.0);
+                            if (imageData && imageData.length > 100) {
+                                chart.destroy();
+                                canvas.remove();
+                                console.log('✓ Immagine creata correttamente');
+                                resolve(imageData);
+                            } else {
+                                console.warn('⚠️ Immagine vuota, riprovando...');
+                                chart.destroy();
+                                canvas.remove();
+                                resolve('');
+                            }
+                        } catch (e) {
+                            console.error('Errore conversione:', e);
+                            chart.destroy();
+                            canvas.remove();
+                            resolve('');
+                        }
+                    }, 500);
                 } catch (e) {
-                    console.error('Errore conversione grafico:', e);
+                    console.error('Errore nel timeout:', e);
+                    chart.destroy();
+                    canvas.remove();
                     resolve('');
                 }
-            }, 500); // Aumentato da 100 a 500ms
+            }, 800); // Aumentato da 500 a 800ms
         } catch (e) {
             console.error('Errore creazione chart:', e);
             resolve('');
@@ -2161,9 +2192,15 @@ Picco Attività: ${peakMonth ? peakMonth[0] : "-"}
 
         console.log('⏳ Generando grafico settori...');
         const sectorImg = await createChartImage(allSectorsChart.config, 1200, 450);
-        if (sectorImg) {
+        if (sectorImg && sectorImg.length > 100) {
             pdf.addImage(sectorImg, "PNG", margin, yPos, pageWidth - margin*2, 200);
             console.log('✓ Grafico settori aggiunto');
+        } else {
+            console.warn('⚠️ Grafico settori non disponibile');
+            pdf.setFontSize(10);
+            pdf.setTextColor(200, 0, 0);
+            pdf.text('[Grafico non disponibile]', margin, yPos + 100);
+            pdf.setTextColor(0, 0, 0);
         }
         yPos += 220;
 
@@ -2197,9 +2234,11 @@ Picco Attività: ${peakMonth ? peakMonth[0] : "-"}
 
         console.log('⏳ Generando grafico Top 5...');
         const top5Img = await createChartImage(top5SectorsBarChart.config, 1200, 450);
-        if (top5Img) {
+        if (top5Img && top5Img.length > 100) {
             pdf.addImage(top5Img, "PNG", margin, yPos, pageWidth - margin*2, 180);
             console.log('✓ Grafico Top 5 aggiunto');
+        } else {
+            console.warn('⚠️ Grafico Top 5 non disponibile');
         }
         yPos += 200;
 
@@ -2211,9 +2250,11 @@ Picco Attività: ${peakMonth ? peakMonth[0] : "-"}
 
         console.log('⏳ Generando grafico obiettivi...');
         const goalsImg = await createChartImage(goalsPieChart.config, 1200, 450);
-        if (goalsImg) {
+        if (goalsImg && goalsImg.length > 100) {
             pdf.addImage(goalsImg, "PNG", margin, yPos, pageWidth - margin*2, 180);
             console.log('✓ Grafico obiettivi aggiunto');
+        } else {
+            console.warn('⚠️ Grafico obiettivi non disponibile');
         }
 
         console.log('✓ Pagina 3 completata');
@@ -2237,9 +2278,11 @@ Picco Attività: ${peakMonth ? peakMonth[0] : "-"}
 
         console.log('⏳ Generando grafico trend mensile...');
         const monthImg = await createChartImage(monthChart.config, 1200, 500);
-        if (monthImg) {
+        if (monthImg && monthImg.length > 100) {
             pdf.addImage(monthImg, "PNG", margin, yPos, pageWidth - margin*2, 230);
             console.log('✓ Grafico trend aggiunto');
+        } else {
+            console.warn('⚠️ Grafico trend non disponibile');
         }
         yPos += 250;
 
