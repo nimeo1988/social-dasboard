@@ -2036,7 +2036,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 50;
+    const margin = 40;
     let yPos = margin;
 
     pdf.setFont("Helvetica");
@@ -2053,6 +2053,7 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
     const sectorCount = {};
     const goalCount = {};
     const monthCount = {};
+    const statusCount = { online: 0, offline: 0, pending: 0, error: 0 };
 
     filteredData.forEach(r => {
         if (r.sector) sectorCount[r.sector] = (sectorCount[r.sector] || 0) + 1;
@@ -2061,153 +2062,309 @@ document.getElementById('generatePdfBtn').addEventListener('click', async functi
             const m = r.date.slice(0, 7);
             monthCount[m] = (monthCount[m] || 0) + 1;
         }
+        const status = siteStatusMap.get(r.site) || 'pending';
+        statusCount[status]++;
     });
 
     const topSector = Object.entries(sectorCount).sort((a,b)=>b[1]-a[1])[0];
+    const top3Sectors = Object.entries(sectorCount).sort((a,b)=>b[1]-a[1]).slice(0, 3);
     const topGoal = Object.entries(goalCount).sort((a,b)=>b[1]-a[1])[0];
+    const top3Goals = Object.entries(goalCount).sort((a,b)=>b[1]-a[1]).slice(0, 3);
     const peakMonth = Object.entries(monthCount).sort((a,b)=>b[1]-a[1])[0];
 
     // =========================
-    // COPERTINA
+    // PAGINA 1: COPERTINA + EXECUTIVE SUMMARY
     // =========================
 
+    // HEADER COPERTINA
     pdf.setFillColor(20, 40, 90);
-    pdf.rect(0, 0, pageWidth, 160, "F");
+    pdf.rect(0, 0, pageWidth, 200, "F");
 
     pdf.setTextColor(255,255,255);
-    pdf.setFontSize(28);
-    pdf.text("REPORT ANALISI CAMPAGNE MALEVOLI", pageWidth/2, 90, {align:"center"});
+    pdf.setFontSize(32);
+    pdf.text("THREAT INTELLIGENCE REPORT", pageWidth/2, 80, {align:"center", maxWidth: pageWidth - 80});
 
-    pdf.setFontSize(14);
-    pdf.text("Social Engineering & Phishing Threat Landscape", pageWidth/2, 120, {align:"center"});
+    pdf.setFontSize(16);
+    pdf.text("Analisi Campagne di Social Engineering & Phishing", pageWidth/2, 130, {align:"center", maxWidth: pageWidth - 80});
 
+    pdf.setTextColor(173, 216, 230);
+    pdf.setFontSize(11);
+    pdf.text(`Generato: ${new Date().toLocaleDateString('it-IT')}`, pageWidth/2, 165, {align:"center"});
+
+    yPos = 230;
     pdf.setTextColor(0,0,0);
+
+    // KEY METRICS
+    pdf.setFontSize(14);
+    pdf.setFont("Helvetica", "bold");
+    pdf.text("📊 Metriche Chiave", margin, yPos);
+    yPos += 20;
+
+    pdf.setFont("Helvetica", "regular");
     pdf.setFontSize(10);
-    pdf.text(`Data generazione: ${new Date().toLocaleDateString()}`, margin, 200);
+    
+    const metricsText = `
+Campagne Totali: ${totalCampaigns} | Siti Unici: ${uniqueSites} | Settori: ${uniqueSectors} | Obiettivi: ${uniqueGoals}
 
-    pdf.addPage();
-    yPos = margin;
+Top Settore: ${topSector ? topSector[0] : "-"} (${topSector ? topSector[1] : 0} eventi)
+Top Obiettivo: ${topGoal ? topGoal[0] : "-"} (${topGoal ? topGoal[1] : 0} eventi)
+Picco Attività: ${peakMonth ? peakMonth[0] : "-"}
+    `.trim();
 
-    // =========================
-    // EXECUTIVE SUMMARY
-    // =========================
+    pdf.text(metricsText, margin, yPos, {maxWidth: pageWidth - margin*2});
+    yPos += 75;
 
-    pdf.setFontSize(16);
-    pdf.text("1. Executive Summary", margin, yPos);
-    yPos += 30;
+    // STATUS SITI
+    pdf.setFontSize(14);
+    pdf.setFont("Helvetica", "bold");
+    pdf.text("🔍 Status Verifica Siti", margin, yPos);
+    yPos += 18;
 
-    pdf.setFontSize(11);
-
-    const summaryText = `
-Nel periodo analizzato sono state rilevate ${totalCampaigns} campagne malevole
-riconducibili a ${uniqueSites} siti distinti, con coinvolgimento di ${uniqueSectors} settori economici
-e ${uniqueGoals} differenti finalità di attacco.
-
-Il settore maggiormente colpito risulta ${topSector ? topSector[0] : "-"}
-(${topSector ? topSector[1] : 0} eventi), mentre l'obiettivo prevalente è
-${topGoal ? topGoal[0] : "-"}.
-
-Il picco di attività è stato registrato nel mese ${peakMonth ? peakMonth[0] : "-"}.
-`.trim();
-
-    pdf.text(summaryText, margin, yPos, {maxWidth: pageWidth - margin*2});
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
+    const statusText = `
+✓ Online: ${statusCount.online} | ✗ Offline: ${statusCount.offline} | ⏳ In Verifica: ${statusCount.pending} | ! Errore: ${statusCount.error}
+    `.trim();
+    pdf.text(statusText, margin, yPos, {maxWidth: pageWidth - margin*2});
 
     // =========================
-    // DISTRIBUZIONE SETTORI
+    // PAGINA 2: GRAFICI SETTORI
     // =========================
 
     pdf.addPage();
     yPos = margin;
 
     pdf.setFontSize(16);
-    pdf.text("2. Distribuzione per Settore", margin, yPos);
+    pdf.setFont("Helvetica", "bold");
+    pdf.text("1. DISTRIBUZIONE PER SETTORE", margin, yPos);
     yPos += 25;
 
-    pdf.setFontSize(11);
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
+    pdf.text("Analisi della concentrazione degli attacchi per settore economico", margin, yPos);
+    yPos += 20;
 
-    const sectorText = `
-L'analisi evidenzia una concentrazione significativa delle campagne
-nel settore ${topSector ? topSector[0] : "-"}, suggerendo una
-strategia mirata verso ambiti ad elevato valore economico o reputazionale.
-`.trim();
+    const sectorImg = await createChartImage(allSectorsChart.config, 1200, 450);
+    pdf.addImage(sectorImg, "PNG", margin, yPos, pageWidth - margin*2, 200);
+    yPos += 220;
 
-    pdf.text(sectorText, margin, yPos, {maxWidth: pageWidth - margin*2});
-    yPos += 80;
+    // Top 5 Settori
+    pdf.setFont("Helvetica", "bold");
+    pdf.setFontSize(12);
+    pdf.text("Top 3 Settori Attaccati:", margin, yPos);
+    yPos += 15;
 
-    const sectorImg = await createChartImage(allSectorsChart.config);
-    pdf.addImage(sectorImg, "PNG", margin, yPos, pageWidth - margin*2, 250);
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
+    top3Sectors.forEach((sector, idx) => {
+        pdf.text(`${idx + 1}. ${sector[0]}: ${sector[1]} campagne`, margin + 10, yPos);
+        yPos += 12;
+    });
 
     // =========================
-    // DISTRIBUZIONE OBIETTIVI
+    // PAGINA 3: TOP 5 SETTORI + OBIETTIVI
+    // =========================
+
+    pdf.addPage();
+    yPos = margin;
+
+    // TOP 5 BAR CHART
+    pdf.setFontSize(16);
+    pdf.setFont("Helvetica", "bold");
+    pdf.text("2. TOP 5 SETTORI (Dettaglio)", margin, yPos);
+    yPos += 20;
+
+    const top5Img = await createChartImage(top5SectorsBarChart.config, 1200, 450);
+    pdf.addImage(top5Img, "PNG", margin, yPos, pageWidth - margin*2, 180);
+    yPos += 200;
+
+    // OBIETTIVI
+    pdf.setFontSize(16);
+    pdf.setFont("Helvetica", "bold");
+    pdf.text("3. DISTRIBUZIONE OBIETTIVI DI ATTACCO", margin, yPos);
+    yPos += 20;
+
+    const goalsImg = await createChartImage(goalsPieChart.config, 1200, 450);
+    pdf.addImage(goalsImg, "PNG", margin, yPos, pageWidth - margin*2, 180);
+
+    // =========================
+    // PAGINA 4: TREND TEMPORALE
     // =========================
 
     pdf.addPage();
     yPos = margin;
 
     pdf.setFontSize(16);
-    pdf.text("3. Distribuzione Obiettivi di Attacco", margin, yPos);
+    pdf.setFont("Helvetica", "bold");
+    pdf.text("4. TREND TEMPORALE - EVOLUZIONE MENSILE", margin, yPos);
+    yPos += 20;
+
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
+    pdf.text("Analisi dell'andamento delle campagne nel tempo", margin, yPos);
+    yPos += 15;
+
+    const monthImg = await createChartImage(monthChart.config, 1200, 500);
+    pdf.addImage(monthImg, "PNG", margin, yPos, pageWidth - margin*2, 230);
+    yPos += 250;
+
+    // =========================
+    // PAGINA 5: EVOLUZIONE SETTORI NEL TEMPO
+    // =========================
+
+    pdf.addPage();
+    yPos = margin;
+
+    pdf.setFontSize(16);
+    pdf.setFont("Helvetica", "bold");
+    pdf.text("5. EVOLUZIONE SETTORI NEL TEMPO", margin, yPos);
+    yPos += 20;
+
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
+    pdf.text("Trend temporale dei principali settori attaccati", margin, yPos);
+    yPos += 15;
+
+    const goalsByMonthImg = await createChartImage(goalsByMonthChart.config, 1200, 500);
+    pdf.addImage(goalsByMonthImg, "PNG", margin, yPos, pageWidth - margin*2, 230);
+
+    // =========================
+    // PAGINA 6: EVOLUZIONE OBIETTIVI NEL TEMPO
+    // =========================
+
+    pdf.addPage();
+    yPos = margin;
+
+    pdf.setFontSize(16);
+    pdf.setFont("Helvetica", "bold");
+    pdf.text("6. EVOLUZIONE OBIETTIVI DI ATTACCO NEL TEMPO", margin, yPos);
+    yPos += 20;
+
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
+    pdf.text("Analisi temporale dei principali obiettivi di attacco", margin, yPos);
+    yPos += 15;
+
+    const attackGoalsImg = await createChartImage(attackGoalsTimeChart.config, 1200, 500);
+    pdf.addImage(attackGoalsImg, "PNG", margin, yPos, pageWidth - margin*2, 230);
+
+    // =========================
+    // PAGINA 7: ANALISI DETTAGLIATA
+    // =========================
+
+    pdf.addPage();
+    yPos = margin;
+
+    pdf.setFontSize(16);
+    pdf.setFont("Helvetica", "bold");
+    pdf.text("7. ANALISI DETTAGLIATA", margin, yPos);
     yPos += 25;
 
-    const goalText = `
-Le finalità di attacco risultano prevalentemente orientate a
-${topGoal ? topGoal[0] : "-"}, indicando una chiara
-propensione verso attività di sottrazione credenziali o frodi mirate.
-`.trim();
-
+    pdf.setFont("Helvetica", "bold");
     pdf.setFontSize(11);
-    pdf.text(goalText, margin, yPos, {maxWidth: pageWidth - margin*2});
-    yPos += 80;
+    pdf.text("🎯 SETTORI PIÙ COLPITI", margin, yPos);
+    yPos += 15;
 
-    const goalImg = await createChartImage(goalsPieChart.config);
-    pdf.addImage(goalImg, "PNG", margin, yPos, pageWidth - margin*2, 250);
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
+    const sectorAnalysis = `
+L'analisi dei dati rivela una concentrazione significativa degli attacchi nel settore ${topSector ? topSector[0] : "-"}, 
+con ${topSector ? topSector[1] : 0} campagne identificate. Questo suggerisce una strategia deliberata di targeting 
+verso ambiti ad elevato valore economico o reputazionale.
+    `.trim();
+    pdf.text(sectorAnalysis, margin, yPos, {maxWidth: pageWidth - margin*2});
+    yPos += 50;
+
+    pdf.setFont("Helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.text("🔗 OBIETTIVI PREVALENTI", margin, yPos);
+    yPos += 15;
+
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
+    const goalAnalysis = `
+Le finalità di attacco risultano prevalentemente orientate a "${topGoal ? topGoal[0] : "-"}", 
+con ${topGoal ? topGoal[1] : 0} occorrenze. Questa distribuzione indica una propensione verso:
+    `.trim();
+    pdf.text(goalAnalysis, margin, yPos, {maxWidth: pageWidth - margin*2});
+    yPos += 35;
+
+    top3Goals.forEach((goal, idx) => {
+        pdf.setFont("Helvetica", "regular");
+        pdf.setFontSize(10);
+        const descriptions = {
+            'CREDENTIAL THEFT': 'Sottrazione di credenziali di accesso',
+            'DATA EXFILTRATION': 'Estrazione e furto dati confidenziali',
+            'FINANCIAL FRAUD': 'Frodi finanziarie e trasferimenti fraudolenti',
+            'MALWARE DISTRIBUTION': 'Distribuzione di malware e trojan',
+            'BRAND SPOOFING': 'Imitazione di brand noti'
+        };
+        const desc = descriptions[goal[0]] || goal[0];
+        pdf.text(`${idx + 1}. ${desc} (${goal[1]} campagne)`, margin + 15, yPos);
+        yPos += 12;
+    });
+
+    yPos += 10;
+
+    pdf.setFont("Helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.text("📅 PICCO DI ATTIVITÀ", margin, yPos);
+    yPos += 15;
+
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
+    const timeAnalysis = `
+Il periodo di massima attività è stato registrato nel mese di ${peakMonth ? peakMonth[0] : "-"}, 
+con ${peakMonth ? peakMonth[1] : 0} campagne. Ciò consente di identificare pattern stagionali e fasi di intensificazione.
+    `.trim();
+    pdf.text(timeAnalysis, margin, yPos, {maxWidth: pageWidth - margin*2});
 
     // =========================
-    // TREND TEMPORALE
+    // PAGINA 8: CONCLUSIONI E RACCOMANDAZIONI
     // =========================
 
     pdf.addPage();
     yPos = margin;
 
     pdf.setFontSize(16);
-    pdf.text("4. Trend Temporale", margin, yPos);
+    pdf.setFont("Helvetica", "bold");
+    pdf.text("8. CONCLUSIONI E RACCOMANDAZIONI", margin, yPos);
     yPos += 25;
 
-    const trendText = `
-L'analisi temporale mostra un andamento variabile delle campagne,
-con un picco nel mese ${peakMonth ? peakMonth[0] : "-"}.
-Il trend consente di identificare eventuali escalation
-o fasi di intensificazione delle attività malevole.
-`.trim();
-
+    pdf.setFont("Helvetica", "bold");
     pdf.setFontSize(11);
-    pdf.text(trendText, margin, yPos, {maxWidth: pageWidth - margin*2});
-    yPos += 80;
+    pdf.text("📋 SINTESI DEI RISULTATI", margin, yPos);
+    yPos += 15;
 
-    const monthImg = await createChartImage(monthChart.config);
-    pdf.addImage(monthImg, "PNG", margin, yPos, pageWidth - margin*2, 250);
-
-    // =========================
-    // CONCLUSIONI
-    // =========================
-
-    pdf.addPage();
-    yPos = margin;
-
-    pdf.setFontSize(16);
-    pdf.text("5. Conclusioni", margin, yPos);
-    yPos += 30;
-
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
     const conclusionText = `
-I dati analizzati evidenziano una attività strutturata e mirata
-da parte degli attori malevoli.
+L'analisi dei dati ha evidenziato un'attività strutturata e coordinata da parte degli attori malevoli. 
+La concentrazione settoriale, la ripetitività degli obiettivi e l'andamento temporale confermano:
 
-La concentrazione settoriale e la ripetitività degli obiettivi
-confermano la necessità di rafforzare le misure di prevenzione,
-monitoraggio e awareness.
-`.trim();
-
-    pdf.setFontSize(11);
+• Una strategia deliberata di targeting verso specifici settori economici
+• Una preferenza marcata per tecniche di social engineering
+• Variazioni stagionali nelle campagne di attacco
+• Una persistenza continua delle minacce nel panorama cybercriminale
+    `.trim();
     pdf.text(conclusionText, margin, yPos, {maxWidth: pageWidth - margin*2});
+    yPos += 90;
+
+    pdf.setFont("Helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.text("✅ AZIONI CONSIGLIATE", margin, yPos);
+    yPos += 15;
+
+    pdf.setFont("Helvetica", "regular");
+    pdf.setFontSize(10);
+    const recommendations = `
+1. AWARENESS & TRAINING: Incrementare i programmi di sensibilizzazione del personale
+2. TECHNICAL CONTROLS: Implementare filtri anti-phishing e DMARC/SPF/DKIM
+3. MONITORING: Attivare sistemi di monitoring continuo per siti malevoli
+4. INCIDENT RESPONSE: Definire playbook e procedure di risposta agli incidenti
+5. THREAT INTELLIGENCE: Integrare i dati in soluzioni SIEM/SOC
+    `.trim();
+    pdf.text(recommendations, margin, yPos, {maxWidth: pageWidth - margin*2});
 
     // =========================
     // FOOTER PAGINE
@@ -2216,16 +2373,29 @@ monitoraggio e awareness.
     const totalPages = pdf.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
+        pdf.setTextColor(150,150,150);
         pdf.setFontSize(8);
+        pdf.setFont("Helvetica", "normal");
+        
+        // Linea separatrice
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(margin, pageHeight - 30, pageWidth - margin, pageHeight - 30);
+        
+        // Testo footer
         pdf.text(
-            `Report Analisi Campagne Malevole - Pagina ${i} di ${totalPages}`,
+            `Report Threat Intelligence - Pagina ${i} di ${totalPages}`,
+            margin,
+            pageHeight - 15
+        );
+        pdf.text(
+            `Confidenziale - ${new Date().getFullYear()}`,
             pageWidth - margin,
-            pageHeight - 20,
+            pageHeight - 15,
             {align: "right"}
         );
     }
 
-    pdf.save(`Report_SOC_${new Date().toISOString().slice(0,10)}.pdf`);
+    pdf.save(`ThreatIntelligence_Report_${new Date().toISOString().slice(0,10)}.pdf`);
 
     loadingOverlay.classList.remove('active');
 });
